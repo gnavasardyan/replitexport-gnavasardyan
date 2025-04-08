@@ -46,7 +46,7 @@ export function LicenseForm({ license, onClose, onSuccess }: LicenseFormProps) {
     const fetchClients = async () => {
       try {
         const response = await API.clients.getAll();
-        setClients(response.map(c => ({ id: c.id, client_name: c.client_name })));
+        setClients(response.map(c => ({ id: c.client_id, client_name: c.client_name })));
       } catch (error) {
         console.error("Ошибка при загрузке клиентов:", error);
         toast({
