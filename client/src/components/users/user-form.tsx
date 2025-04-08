@@ -77,7 +77,7 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
     const fetchPartners = async () => {
       try {
         const response = await API.partners.getAll();
-        setPartners(response.map(p => ({ id: p.id, name: p.partner_name })));
+        setPartners(response);
       } catch (error) {
         console.error("Ошибка при загрузке партнеров:", error);
       }
@@ -301,8 +301,8 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
                   <SelectContent>
                     <SelectItem value="0">Не выбрано</SelectItem>
                     {partners.map((partner) => (
-                      <SelectItem key={partner.id} value={partner.id.toString()}>
-                        {partner.name}
+                      <SelectItem key={partner.partner_id} value={partner.partner_id.toString()}>
+                        {partner.partner_name}
                       </SelectItem>
                     ))}
                   </SelectContent>
