@@ -9,13 +9,10 @@ export function setupApiProxy(app: Express) {
   console.log(`Setting up API proxy for ${API_PREFIX} -> http://158.160.86.244:50000${API_PREFIX}`);
   
   // Настройка прокси для внешнего API с дополнительным логированием
+  // @ts-ignore - игнорируем ошибки типов в http-proxy-middleware, библиотека и TypeScript имеют несовпадения
   const apiProxy = createProxyMiddleware({
     target: 'http://158.160.86.244:50000',
     changeOrigin: true,
-    // Убедимся что пути точно совпадают
-    pathRewrite: {
-      '^/api/v1': '/api/v1' 
-    },
     // Настройка прокси
     onProxyReq: function(proxyReq: any, req: IncomingMessage) {
       const originalPath = (req as any).originalUrl;
@@ -89,6 +86,16 @@ export function setupApiProxy(app: Express) {
         error: error instanceof Error ? error.message : 'Неизвестная ошибка' 
       });
     }
+  });
+
+  // Применяем прокси ко всем маршрутам API
+  // Обработка ошибок прокси-запросов
+  app.use((err: any, req: Request, res: Response, next: any) => {
+    if (err && err.code === 'ECONNRESET') {
+      console.error('Connection reset by server for request', req.url);
+      return res.status(504).json({ message: 'Gateway timeout', details: 'Connection reset by server' });
+    }
+    next(err);
   });
 
   // Применяем прокси ко всем маршрутам API
