@@ -63,9 +63,7 @@ export default function Users() {
     if (!selectedUser) return;
 
     try {
-      await apiRequest(`/api/v1/users/${selectedUser.id}`, {
-        method: "DELETE"
-      });
+      await apiRequest("DELETE", `/api/v1/users/${selectedUser.id}`, undefined);
 
       // Обновляем кеш запросов
       queryClient.invalidateQueries({ queryKey: ["/api/v1/users"] });
