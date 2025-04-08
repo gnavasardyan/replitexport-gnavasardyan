@@ -258,16 +258,20 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
               <FormItem>
                 <FormLabel>Партнер</FormLabel>
                 <Select 
-                  onValueChange={(value) => field.onChange(value === "0" ? undefined : parseInt(value))} 
-                  value={field.value?.toString() || "0"}
+                  onValueChange={(value) => {
+                    const selectedPartner = partners.find(p => p.partner_id.toString() === value);
+                    field.onChange(selectedPartner?.partner_id || undefined);
+                  }}
+                  value={field.value?.toString()}
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Выберите партнера" />
+                      <SelectValue>
+                        {partners.find(p => p.partner_id === field.value)?.partner_name || "Выберите партнера"}
+                      </SelectValue>
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="0">Не выбрано</SelectItem>
                     {partners.map((partner) => (
                       <SelectItem key={partner.partner_id} value={partner.partner_id.toString()}>
                         {partner.partner_name}
