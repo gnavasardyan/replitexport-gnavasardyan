@@ -112,7 +112,7 @@ export default function Users() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredUsers.map((user: UserResponse) => (
                 <UserCard
-                  key={user.id}
+                  key={user.user_id}
                   user={user}
                   onEdit={handleEditUser}
                   onDelete={handleDeleteUser}
@@ -134,7 +134,7 @@ export default function Users() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredUsers.map((user: UserResponse) => (
                 <UserCard
-                  key={user.id}
+                  key={user.user_id}
                   user={user}
                   onEdit={handleEditUser}
                   onDelete={handleDeleteUser}
@@ -156,7 +156,7 @@ export default function Users() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredUsers.map((user: UserResponse) => (
                 <UserCard
-                  key={user.id}
+                  key={user.user_id}
                   user={user}
                   onEdit={handleEditUser}
                   onDelete={handleDeleteUser}
