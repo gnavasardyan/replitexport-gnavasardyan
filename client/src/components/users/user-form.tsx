@@ -86,7 +86,7 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
     const fetchClients = async () => {
       try {
         const response = await API.clients.getAll();
-        setClients(response.map(c => ({ id: c.id, name: c.client_name })));
+        setClients(response);
       } catch (error) {
         console.error("Ошибка при загрузке клиентов:", error);
       }
@@ -330,8 +330,8 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
                   <SelectContent>
                     <SelectItem value="0">Не выбрано</SelectItem>
                     {clients.map((client) => (
-                      <SelectItem key={client.id} value={client.id.toString()}>
-                        {client.name}
+                      <SelectItem key={client.client_id} value={client.client_id.toString()}>
+                        {client.client_name}
                       </SelectItem>
                     ))}
                   </SelectContent>
