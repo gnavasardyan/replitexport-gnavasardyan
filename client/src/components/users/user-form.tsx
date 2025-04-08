@@ -33,28 +33,26 @@ import { apiRequest } from "@/lib/queryClient";
 
 // Определяем схему валидации формы
 const userFormSchema = z.object({
-  username: z.string().min(3, {
-    message: "Имя пользователя должно содержать не менее 3 символов",
+  email: z.string().email({
+    message: "Укажите корректный email адрес",
   }),
   password: z.string().min(6, {
     message: "Пароль должен содержать не менее 6 символов",
   }),
-  name: z.string().min(2, {
-    message: "Имя должно содержать не менее 2 символов",
+  last_logon_time: z.date().optional(),
+  status: z.enum(["ACTIVE", "CREATED", "CONFIRMED"], {
+    required_error: "Выберите статус пользователя",
   }),
-  email: z.string().email({
-    message: "Укажите корректный email адрес",
+  email_confirm_token: z.string(),
+  partner_id: z.number({
+    required_error: "Выберите партнера",
   }),
   role: z.enum(["admin", "user"], {
     required_error: "Выберите роль пользователя",
   }),
-
-  status: z.enum(["ACTIVE", "CREATED", "CONFIRMED"], {
-    required_error: "Выберите статус пользователя",
+  client_id: z.number({
+    required_error: "Выберите клиента",
   }),
-  email_confirm_token: z.string().optional(),
-  partner_id: z.number().optional(),
-  client_id: z.number().optional(),
 });
 
 type UserFormValues = z.infer<typeof userFormSchema>;
@@ -100,16 +98,14 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
   const form = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
     defaultValues: {
-      username: user?.username || "",
-      password: "", // Не показываем пароль даже при редактировании
-      name: user?.name || "",
       email: user?.email || "",
-      role: (user?.role as any) || "user",
-      status: "ACTIVE", // Дефолтное значение
-
-      email_confirm_token: "",
-      partner_id: undefined,
-      client_id: undefined,
+      password: "", // Не показываем пароль даже при редактировании
+      last_logon_time: user?.last_logon_time ? new Date(user.last_logon_time) : undefined,
+      status: user?.status || "CREATED",
+      email_confirm_token: user?.email_confirm_token || "",
+      partner_id: user?.partner_id,
+      role: user?.role || "user",
+      client_id: user?.client_id,
     },
   });
 
