@@ -68,7 +68,7 @@ export function DeviceForm({ device, onClose, onSuccess }: DeviceFormProps) {
         os_version: "",
         lm_version: "",
         local_id: "",
-        status: "not_configured"
+        status: "not_configured" as string
       };
 
   const form = useForm({

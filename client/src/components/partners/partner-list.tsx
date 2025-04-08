@@ -39,20 +39,21 @@ export function PartnerList() {
     staleTime: 10000
   });
 
-  const filteredPartners = partners?.filter((partner: Partner) => {
+  const filteredPartners = partners ? partners.filter((partner: any) => {
     // Search query filter
     const matchesSearch = !searchQuery || 
-      partner.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      partner.email.toLowerCase().includes(searchQuery.toLowerCase());
+      partner.partner_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      partner.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      partner.inn.toLowerCase().includes(searchQuery.toLowerCase());
     
     // Status filter
-    const matchesStatus = !statusFilter || partner.status === statusFilter;
+    const matchesStatus = !statusFilter || (partner.status && partner.status === statusFilter);
     
     // Type filter
-    const matchesType = !typeFilter || partner.type === typeFilter;
+    const matchesType = !typeFilter || (partner.type && partner.type === typeFilter);
     
     return matchesSearch && matchesStatus && matchesType;
-  });
+  }) : [];
 
   const handleViewPartner = (partner: Partner) => {
     setSelectedPartner(partner);
@@ -263,7 +264,7 @@ export function PartnerList() {
           <div className="text-sm text-gray-700">
             Showing <span className="font-medium">1</span> to{" "}
             <span className="font-medium">{filteredPartners.length}</span> of{" "}
-            <span className="font-medium">{partners?.length}</span> results
+            <span className="font-medium">{(partners || []).length}</span> results
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" disabled>
@@ -324,39 +325,43 @@ export function PartnerList() {
             <div className="space-y-4 py-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Name</p>
-                  <p className="text-lg font-medium">{selectedPartner.name}</p>
+                  <p className="text-sm font-medium text-gray-500">Наименование</p>
+                  <p className="text-lg font-medium">{selectedPartner.partner_name}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Status</p>
-                  <p className="text-lg font-medium">{selectedPartner.status}</p>
+                  <p className="text-sm font-medium text-gray-500">ИНН</p>
+                  <p className="text-lg font-medium">{selectedPartner.inn}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Type</p>
-                  <p className="text-lg font-medium">{selectedPartner.type}</p>
+                  <p className="text-sm font-medium text-gray-500">КПП</p>
+                  <p className="text-lg font-medium">{selectedPartner.kpp}</p>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500">Partner Since</p>
-                  <p className="text-lg font-medium">{selectedPartner.joinedDate}</p>
+                  <p className="text-sm font-medium text-gray-500">ОГРН</p>
+                  <p className="text-lg font-medium">{selectedPartner.ogrn}</p>
                 </div>
                 <div className="col-span-2">
                   <p className="text-sm font-medium text-gray-500">Email</p>
                   <p className="text-lg font-medium">{selectedPartner.email}</p>
                 </div>
                 <div className="col-span-2">
-                  <p className="text-sm font-medium text-gray-500">Phone</p>
-                  <p className="text-lg font-medium">{selectedPartner.phone}</p>
+                  <p className="text-sm font-medium text-gray-500">API Token</p>
+                  <p className="text-lg font-medium">{selectedPartner.apitoken}</p>
                 </div>
-                {selectedPartner.location && (
+                <div className="col-span-2">
+                  <p className="text-sm font-medium text-gray-500">Адрес</p>
+                  <p className="text-lg font-medium">{selectedPartner.address}</p>
+                </div>
+                {selectedPartner.status && (
                   <div className="col-span-2">
-                    <p className="text-sm font-medium text-gray-500">Location</p>
-                    <p className="text-lg font-medium">{selectedPartner.location}</p>
+                    <p className="text-sm font-medium text-gray-500">Статус</p>
+                    <p className="text-lg font-medium">{selectedPartner.status}</p>
                   </div>
                 )}
-                {selectedPartner.address && (
+                {selectedPartner.type && (
                   <div className="col-span-2">
-                    <p className="text-sm font-medium text-gray-500">Address</p>
-                    <p className="text-lg font-medium">{selectedPartner.address}</p>
+                    <p className="text-sm font-medium text-gray-500">Тип</p>
+                    <p className="text-lg font-medium">{selectedPartner.type}</p>
                   </div>
                 )}
               </div>

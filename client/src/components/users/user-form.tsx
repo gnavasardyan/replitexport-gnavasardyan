@@ -77,7 +77,7 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
     const fetchPartners = async () => {
       try {
         const response = await API.partners.getAll();
-        setPartners(response.map(p => ({ id: p.id, name: p.name })));
+        setPartners(response.map(p => ({ id: p.id, name: p.partner_name })));
       } catch (error) {
         console.error("Ошибка при загрузке партнеров:", error);
       }
@@ -86,7 +86,7 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
     const fetchClients = async () => {
       try {
         const response = await API.clients.getAll();
-        setClients(response.map(c => ({ id: c.id, name: c.name })));
+        setClients(response.map(c => ({ id: c.id, name: c.client_name })));
       } catch (error) {
         console.error("Ошибка при загрузке клиентов:", error);
       }

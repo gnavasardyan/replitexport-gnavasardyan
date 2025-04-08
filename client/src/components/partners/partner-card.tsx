@@ -52,9 +52,9 @@ const getTypeColor = (type: string) => {
 };
 
 export function PartnerCard({ partner, onView, onEdit, onDelete }: PartnerCardProps) {
-  const initials = getInitials(partner.name);
-  const statusColor = getStatusColor(partner.status);
-  const typeColor = getTypeColor(partner.type);
+  const initials = getInitials(partner.partner_name || "");
+  const statusColor = getStatusColor(partner.status || "");
+  const typeColor = getTypeColor(partner.type || "");
 
   return (
     <Card className="hover:shadow-md transition-shadow duration-300 border border-gray-200 overflow-hidden">
@@ -64,13 +64,15 @@ export function PartnerCard({ partner, onView, onEdit, onDelete }: PartnerCardPr
             <span className="font-bold">{initials}</span>
           </div>
           <div className="ml-3">
-            <h3 className="text-lg font-medium text-gray-900">{partner.name}</h3>
-            <p className="text-sm text-gray-500">{partner.type}</p>
+            <h3 className="text-lg font-medium text-gray-900">{partner.partner_name}</h3>
+            <p className="text-sm text-gray-500">{partner.inn}</p>
           </div>
         </div>
-        <Badge className={cn("text-xs", statusColor)} variant="outline">
-          {partner.status}
-        </Badge>
+        {partner.status && (
+          <Badge className={cn("text-xs", statusColor)} variant="outline">
+            {partner.status}
+          </Badge>
+        )}
       </CardHeader>
       <CardContent className="px-6 py-4">
         <div className="mb-4">
@@ -78,26 +80,34 @@ export function PartnerCard({ partner, onView, onEdit, onDelete }: PartnerCardPr
             <Mail className="mr-2 w-4 h-4 text-gray-400" />
             <span>{partner.email}</span>
           </div>
-          <div className="flex items-center text-sm text-gray-600 mb-2">
-            <Phone className="mr-2 w-4 h-4 text-gray-400" />
-            <span>{partner.phone}</span>
-          </div>
-          {partner.location && (
+          {partner.kpp && (
+            <div className="flex items-center text-sm text-gray-600 mb-2">
+              <span className="mr-2 w-4 h-4 text-gray-400 font-medium">КПП:</span>
+              <span>{partner.kpp}</span>
+            </div>
+          )}
+          {partner.ogrn && (
+            <div className="flex items-center text-sm text-gray-600 mb-2">
+              <span className="mr-2 w-4 h-4 text-gray-400 font-medium">ОГРН:</span>
+              <span>{partner.ogrn}</span>
+            </div>
+          )}
+          {partner.address && (
             <div className="flex items-center text-sm text-gray-600">
               <MapPin className="mr-2 w-4 h-4 text-gray-400" />
-              <span>{partner.location}</span>
+              <span>{partner.address}</span>
             </div>
           )}
         </div>
         <div className="mt-4 flex justify-between">
           <div>
-            <span className="text-xs font-medium text-gray-500">PARTNER SINCE</span>
-            <p className="text-sm font-medium">{partner.joinedDate}</p>
+            <span className="text-xs font-medium text-gray-500">ИНН</span>
+            <p className="text-sm font-medium">{partner.inn}</p>
           </div>
-          {partner.contractCount && (
+          {partner.apitoken && (
             <div>
-              <span className="text-xs font-medium text-gray-500">CONTRACTS</span>
-              <p className="text-sm font-medium">{partner.contractCount}</p>
+              <span className="text-xs font-medium text-gray-500">API TOKEN</span>
+              <p className="text-sm font-medium">{partner.apitoken.substring(0, 8)}...</p>
             </div>
           )}
         </div>

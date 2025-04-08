@@ -1,14 +1,14 @@
 export interface Partner {
   id: number;
-  name: string;
-  type: string;
-  status: string;
+  partner_name: string;
+  inn: string;
+  kpp: string;
+  ogrn: string;
+  address: string;
   email: string;
-  phone: string;
-  location?: string;
-  joinedDate: string;
-  contractCount?: string;
-  address?: string;
+  apitoken: string;
+  type?: string;
+  status?: string;
 }
 
 export type PartnerResponse = Partner;
