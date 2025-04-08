@@ -12,22 +12,34 @@ export function setupApiProxy(app: Express) {
   const apiProxy = createProxyMiddleware({
     target: 'http://158.160.86.244:50000',
     changeOrigin: true,
-    // Не переписываем путь, он должен быть одинаковым
-    // pathRewrite: {
-    //   [`^${API_PREFIX}`]: '/api/v1', 
-    // },
-    logLevel: 'debug',
-    
-    // Расширенные обработчики с логированием
+    // Убедимся что пути точно совпадают
+    pathRewrite: {
+      '^/api/v1': '/api/v1' 
+    },
+    // Настройка прокси
     onProxyReq: function(proxyReq: any, req: IncomingMessage) {
-      console.log(`Proxying request to: ${req.method} ${req.url}`);
+      const originalPath = (req as any).originalUrl;
+      console.log(`Proxying request to: ${req.method} ${originalPath} -> ${proxyReq.path}`);
       
-      // Добавляем заголовки для совместимости, если необходимо
+      // Добавляем заголовки для совместимости
       proxyReq.setHeader('Accept', 'application/json');
+      
+      // Исправляем путь если необходимо сохранить слэш в конце
+      if (originalPath.endsWith('/') && !proxyReq.path.endsWith('/')) {
+        proxyReq.path = proxyReq.path + '/';
+        console.log(`Fixed path to: ${proxyReq.path}`);
+      }
     },
     
     onProxyRes: function(proxyRes: any, req: IncomingMessage) {
       console.log(`Proxied response from: ${(req as any).method} ${(req as any).url} - Status: ${proxyRes.statusCode}`);
+      
+      // Если получен ответ с данными, логируем это
+      if (proxyRes.statusCode === 200) {
+        console.log(`Successfully received data from API`);
+      } else {
+        console.warn(`Error response from API: ${proxyRes.statusCode}`);
+      }
       
       // Добавляем CORS заголовки
       proxyRes.headers['access-control-allow-origin'] = '*';
@@ -37,8 +49,17 @@ export function setupApiProxy(app: Express) {
     
     onError: function(err: Error, req: Request, res: Response) {
       console.error(`Proxy error on ${req.method} ${req.url}:`, err);
-      res.status(500).json({ message: 'Proxy error', error: err.message });
-    },
+      // Отправляем более подробную информацию об ошибке для отладки
+      const errorDetail = err.stack || err.message || 'Unknown proxy error';
+      console.error('Detailed error:', errorDetail);
+      
+      res.status(500).json({ 
+        message: 'Proxy error', 
+        error: err.message,
+        url: req.url,
+        method: req.method
+      });
+    }
   });
 
   // Добавляем обработчик для CORS preflight запросов
@@ -47,6 +68,27 @@ export function setupApiProxy(app: Express) {
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
     res.sendStatus(200);
+  });
+
+  // Прямой обработчик для тестирования доступности API
+  app.get(`${API_PREFIX}/test`, async (req, res) => {
+    try {
+      const response = await fetch('http://158.160.86.244:50000/api/v1/partners/');
+      if (response.ok) {
+        const data = await response.json();
+        res.json({ status: 'API доступен', data });
+      } else {
+        res.status(response.status).json({ 
+          status: 'API недоступен', 
+          error: `Статус: ${response.status} - ${response.statusText}` 
+        });
+      }
+    } catch (error) {
+      res.status(500).json({ 
+        status: 'Ошибка соединения с API', 
+        error: error instanceof Error ? error.message : 'Неизвестная ошибка' 
+      });
+    }
   });
 
   // Применяем прокси ко всем маршрутам API

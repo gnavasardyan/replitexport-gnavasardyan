@@ -20,7 +20,8 @@ export function ApiStatusIndicator() {
       const timeoutId = setTimeout(() => controller.abort(), 5000);
       
       try {
-        const response = await fetch('/api/v1/partners/', {
+        // Используем специальный тестовый эндпоинт
+        const response = await fetch('/api/v1/test', {
           method: 'GET',
           headers: {
             'Accept': 'application/json'
@@ -30,12 +31,14 @@ export function ApiStatusIndicator() {
         
         clearTimeout(timeoutId);
         
-        if (response.ok) {
+        const result = await response.json();
+        
+        if (response.ok && result.status === 'API доступен') {
           setStatus('online');
           setError(null);
         } else {
           setStatus('error');
-          setError(`Ошибка запроса: ${response.status} - ${response.statusText}`);
+          setError(result.error || `Ошибка запроса: ${response.status} - ${response.statusText}`);
           setShowAlert(true);
         }
       } catch (fetchError) {
