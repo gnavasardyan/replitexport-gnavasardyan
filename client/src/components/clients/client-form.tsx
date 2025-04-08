@@ -45,7 +45,7 @@ export function ClientForm({ client, onClose, onSuccess }: ClientFormProps) {
     const fetchPartners = async () => {
       try {
         const response = await API.partners.getAll();
-        setPartners(response.map(p => ({ id: p.id, partner_name: p.partner_name })));
+        setPartners(response.map(p => ({ id: p.partner_id, partner_name: p.partner_name })));
       } catch (error) {
         console.error("Ошибка при загрузке партнеров:", error);
         toast({
@@ -117,7 +117,8 @@ export function ClientForm({ client, onClose, onSuccess }: ClientFormProps) {
     setIsSubmitting(true);
     
     if (client) {
-      updateMutation.mutate({ id: client.id, data });
+      const clientId = client.client_id;
+      updateMutation.mutate({ id: clientId, data });
     } else {
       createMutation.mutate(data);
     }

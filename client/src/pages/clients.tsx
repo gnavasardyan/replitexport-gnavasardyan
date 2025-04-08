@@ -76,7 +76,7 @@ export default function Clients() {
 
   const handleConfirmDelete = () => {
     if (selectedClient) {
-      deleteMutation.mutate(selectedClient.id);
+      deleteMutation.mutate(selectedClient.client_id);
     }
   };
 
@@ -133,7 +133,7 @@ export default function Clients() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredClients.map((client: ClientResponse) => (
-              <Card key={client.id} className="overflow-hidden">
+              <Card key={client.client_id} className="overflow-hidden">
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-start">
                     <CardTitle className="text-xl">{client.client_name}</CardTitle>

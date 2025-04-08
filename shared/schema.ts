@@ -97,7 +97,7 @@ export type PartnerUpdate = z.infer<typeof partnerUpdateSchema>;
 
 // Client schema
 export const clients = pgTable("clients", {
-  id: serial("id").primaryKey(),
+  client_id: serial("client_id").primaryKey(),
   partner_id: integer("partner_id").notNull(),
   client_name: text("client_name").notNull(),
   inn: text("inn").notNull(),
@@ -106,7 +106,7 @@ export const clients = pgTable("clients", {
 });
 
 export const insertClientSchema = createInsertSchema(clients).omit({
-  id: true,
+  client_id: true,
   createdAt: true,
 });
 
@@ -114,7 +114,7 @@ export type Client = typeof clients.$inferSelect;
 export type InsertClient = z.infer<typeof insertClientSchema>;
 
 export const clientResponseSchema = z.object({
-  id: z.number(),
+  client_id: z.number(),
   partner_id: z.number(),
   client_name: z.string(),
   inn: z.string(),
