@@ -1,6 +1,16 @@
 import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { Users, BarChart3, FolderClosed, Settings } from "lucide-react";
+import { 
+  Users, 
+  BarChart3, 
+  FolderClosed, 
+  Settings, 
+  Building2, 
+  Key, 
+  Cpu, 
+  FileUp,
+  UserCircle
+} from "lucide-react";
 
 interface SidebarItemProps {
   icon: React.ReactNode;
@@ -72,31 +82,87 @@ export function Sidebar() {
 
         {/* Navigation Links */}
         <nav className="py-4 flex-grow">
-          <ul className="space-y-1">
-            <SidebarItem
-              icon={<Users className="w-5 h-5 mr-3" />}
-              label="Partners"
-              href="/partners"
-              active={isActive("/partners")}
-            />
-            <SidebarItem
-              icon={<BarChart3 className="w-5 h-5 mr-3" />}
-              label="Analytics"
-              href="/analytics"
-              active={isActive("/analytics")}
-            />
-            <SidebarItem
-              icon={<FolderClosed className="w-5 h-5 mr-3" />}
-              label="Reports"
-              href="/reports"
-              active={isActive("/reports")}
-            />
-            <SidebarItem
-              icon={<Settings className="w-5 h-5 mr-3" />}
-              label="Settings"
-              href="/settings"
-              active={isActive("/settings")}
-            />
+          <ul className="space-y-4">
+            {/* Main Group */}
+            <li>
+              <div className="px-4 mb-1 text-xs font-semibold text-gray-500 uppercase">
+                Управление Партнерами
+              </div>
+              <ul className="mt-1 space-y-1">
+                <SidebarItem
+                  icon={<Users className="w-5 h-5 mr-3" />}
+                  label="Партнеры"
+                  href="/partners"
+                  active={isActive("/partners")}
+                />
+                <SidebarItem
+                  icon={<Building2 className="w-5 h-5 mr-3" />}
+                  label="Клиенты"
+                  href="/clients"
+                  active={isActive("/clients")}
+                />
+              </ul>
+            </li>
+
+            {/* Licensing Group */}
+            <li>
+              <div className="px-4 mb-1 text-xs font-semibold text-gray-500 uppercase">
+                Лицензирование
+              </div>
+              <ul className="mt-1 space-y-1">
+                <SidebarItem
+                  icon={<Key className="w-5 h-5 mr-3" />}
+                  label="Лицензии"
+                  href="/licenses"
+                  active={isActive("/licenses")}
+                />
+                <SidebarItem
+                  icon={<Cpu className="w-5 h-5 mr-3" />}
+                  label="Устройства"
+                  href="/devices"
+                  active={isActive("/devices")}
+                />
+                <SidebarItem
+                  icon={<FileUp className="w-5 h-5 mr-3" />}
+                  label="Обновления"
+                  href="/updates"
+                  active={isActive("/updates")}
+                />
+              </ul>
+            </li>
+
+            {/* Admin Group */}
+            <li>
+              <div className="px-4 mb-1 text-xs font-semibold text-gray-500 uppercase">
+                Администрирование
+              </div>
+              <ul className="mt-1 space-y-1">
+                <SidebarItem
+                  icon={<UserCircle className="w-5 h-5 mr-3" />}
+                  label="Пользователи"
+                  href="/users"
+                  active={isActive("/users")}
+                />
+                <SidebarItem
+                  icon={<BarChart3 className="w-5 h-5 mr-3" />}
+                  label="Аналитика"
+                  href="/analytics"
+                  active={isActive("/analytics")}
+                />
+                <SidebarItem
+                  icon={<FolderClosed className="w-5 h-5 mr-3" />}
+                  label="Отчеты"
+                  href="/reports"
+                  active={isActive("/reports")}
+                />
+                <SidebarItem
+                  icon={<Settings className="w-5 h-5 mr-3" />}
+                  label="Настройки"
+                  href="/settings"
+                  active={isActive("/settings")}
+                />
+              </ul>
+            </li>
           </ul>
         </nav>
 
