@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { API } from "@/lib/api";
-import { partnerFormSchema, InsertPartner, PartnerResponse } from "@shared/schema";
+import { partnerFormSchema, InsertPartner, PartnerResponse, PartnerUpdate } from "@shared/schema";
 import { 
   Form, 
   FormControl, 
@@ -15,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 import {
   Select,
   SelectContent,
@@ -22,7 +23,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
 
 interface PartnerFormProps {
   partner?: PartnerResponse;
@@ -44,9 +44,6 @@ export function PartnerForm({ partner, onClose, onSuccess }: PartnerFormProps) {
         ogrn: "",
         address: "",
         email: "",
-        apitoken: "",
-        type: "provider",
-        status: "active",
       };
 
   const form = useForm({
@@ -75,7 +72,8 @@ export function PartnerForm({ partner, onClose, onSuccess }: PartnerFormProps) {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<PartnerResponse> }) => API.partners.update(id, data),
+    mutationFn: ({ partner_id, data }: { partner_id: number; data: PartnerUpdate }) => 
+      API.partners.update(partner_id, data),
     onSuccess: () => {
       toast({
         title: "Успех",
@@ -98,7 +96,10 @@ export function PartnerForm({ partner, onClose, onSuccess }: PartnerFormProps) {
     setIsSubmitting(true);
     
     if (partner) {
-      updateMutation.mutate({ id: partner.id, data });
+      updateMutation.mutate({ 
+        partner_id: partner.partner_id, 
+        data: data as PartnerUpdate 
+      });
     } else {
       createMutation.mutate(data);
     }
@@ -192,65 +193,7 @@ export function PartnerForm({ partner, onClose, onSuccess }: PartnerFormProps) {
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="apitoken"
-            render={({ field }) => (
-              <FormItem className="sm:col-span-2">
-                <FormLabel>API токен*</FormLabel>
-                <FormControl>
-                  <Input placeholder="Введите API токен" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
 
-          <FormField
-            control={form.control}
-            name="type"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Тип партнера</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Выберите тип" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="provider">Провайдер</SelectItem>
-                    <SelectItem value="distributor">Дистрибьютор</SelectItem>
-                    <SelectItem value="reseller">Реселлер</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="status"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Статус</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Выберите статус" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="active">Активный</SelectItem>
-                    <SelectItem value="inactive">Неактивный</SelectItem>
-                    <SelectItem value="suspended">Приостановлен</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
         </div>
 
         <div className="flex justify-end gap-2 mt-6">

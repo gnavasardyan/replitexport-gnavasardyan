@@ -3,75 +3,84 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // User schema
+export const UserStatus = ["ACTIVE", "CREATED", "CONFIRMED"] as const;
+export const UserRole = ["USER", "ADMIN", "SUPPORT"] as const;
+
 export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
+  email: text("email").notNull().primaryKey(),
   password: text("password").notNull(),
-  name: text("name"),
-  email: text("email"),
-  role: text("role").default("user"),
-  createdAt: timestamp("created_at").defaultNow(),
+  status: text("status").notNull().default("CREATED"),
+  role: text("role").default("USER"),
+  email_confirm_token: text("email_confirm_token").notNull(),
+  partner_id: integer("partner_id").notNull(),
+  client_id: integer("client_id").notNull(),
+  last_logon_time: timestamp("last_logon_time"),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
-  name: true,
-  email: true,
-  role: true,
-});
+export const insertUserSchema = createInsertSchema(users);
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 
 export const userResponseSchema = z.object({
-  id: z.number(),
-  username: z.string(),
-  name: z.string().optional(),
-  email: z.string().email().optional(),
-  role: z.string().optional(),
-  createdAt: z.date().optional(),
-  status: z.enum(["ACTIVE", "CREATED", "CONFIRMED"]).optional(),
+  email: z.string().email(),
+  status: z.enum(UserStatus),
+  role: z.enum(UserRole),
+  email_confirm_token: z.string(),
+  partner_id: z.number(),
+  client_id: z.number(),
   last_logon_time: z.date().optional(),
+});
+
+export const userUpdateSchema = z.object({
+  email: z.string().email().optional(),
+  password: z.string().optional(),
+  status: z.enum(UserStatus).optional(),
+  role: z.enum(UserRole).optional(),
   email_confirm_token: z.string().optional(),
   partner_id: z.number().optional(),
   client_id: z.number().optional(),
+  last_logon_time: z.date().optional(),
 });
 
 export type UserResponse = z.infer<typeof userResponseSchema>;
+export type UserUpdate = z.infer<typeof userUpdateSchema>;
 
 // Partner schema
 export const partners = pgTable("partners", {
-  id: serial("id").primaryKey(),
+  partner_id: serial("partner_id").primaryKey(),
   partner_name: text("partner_name").notNull(),
   inn: text("inn").notNull(),
   kpp: text("kpp").notNull(),
   ogrn: text("ogrn").notNull(),
   address: text("address").notNull(),
   email: text("email").notNull(),
-  apitoken: text("apitoken").notNull(),
-  status: text("status").notNull().default("active"),
-  type: text("type").notNull().default("provider"),
 });
 
 export const insertPartnerSchema = createInsertSchema(partners).omit({
-  id: true,
+  partner_id: true,
 });
 
 export type Partner = typeof partners.$inferSelect;
 export type InsertPartner = z.infer<typeof insertPartnerSchema>;
 
 export const partnerResponseSchema = z.object({
-  id: z.number(),
+  partner_id: z.number(),
   partner_name: z.string(),
   inn: z.string(),
   kpp: z.string(),
   ogrn: z.string(),
   address: z.string(),
   email: z.string().email(),
-  apitoken: z.string(),
-  status: z.string().optional(),
-  type: z.string().optional(),
+});
+
+export const partnerUpdateSchema = z.object({
+  partner_name: z.string().optional(),
+  inn: z.string().optional(),
+  kpp: z.string().optional(),
+  ogrn: z.string().optional(),
+  address: z.string().optional(),
+  email: z.string().email().optional(),
 });
 
 export const partnerFormSchema = insertPartnerSchema.extend({
@@ -81,10 +90,10 @@ export const partnerFormSchema = insertPartnerSchema.extend({
   ogrn: z.string().min(13, "ОГРН обязателен и должен содержать не менее 13 символов"),
   address: z.string().min(5, "Адрес обязателен"),
   email: z.string().email("Необходим действительный адрес электронной почты"),
-  apitoken: z.string().min(6, "API-токен обязателен и должен содержать не менее 6 символов"),
 });
 
 export type PartnerResponse = z.infer<typeof partnerResponseSchema>;
+export type PartnerUpdate = z.infer<typeof partnerUpdateSchema>;
 
 // Client schema
 export const clients = pgTable("clients", {
