@@ -7,16 +7,24 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { API } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter 
+  DialogFooter
 } from "@/components/ui/dialog";
 import { ClientResponse } from "@shared/schema";
 import { ClientForm } from "@/components/clients/client-form";
+import { useNavigate } from 'wouter'; // Assuming wouter for routing
+
+function BackButton() {
+  const navigate = useNavigate();
+  return (
+    <Button onClick={() => navigate('/')}>Back to Main Menu</Button>
+  );
+}
 
 export default function Clients() {
   const { toast } = useToast();
@@ -53,7 +61,7 @@ export default function Clients() {
       description: `${client.client_name} (ИНН: ${client.inn})`,
     });
   };
-  
+
   // Удаление клиента
   const deleteMutation = useMutation({
     mutationFn: (id: number) => API.clients.delete(id),
@@ -88,12 +96,13 @@ export default function Clients() {
   };
 
   // Фильтрация клиентов по поисковому запросу
-  const filteredClients = clients?.filter(client => 
+  const filteredClients = clients?.filter(client =>
     client.client_name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
     <div className="container mx-auto p-4">
+      <BackButton /> {/* Added Back Button */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Клиенты</h1>
         <Button onClick={handleAddClient} className="gap-2">
@@ -112,7 +121,7 @@ export default function Clients() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <button 
+          <button
             className="absolute right-3 top-2 text-gray-500 hover:text-gray-700"
             onClick={() => setSearchQuery("")}
           >
@@ -183,7 +192,7 @@ export default function Clients() {
               Заполните форму для создания нового клиента
             </DialogDescription>
           </DialogHeader>
-          <ClientForm 
+          <ClientForm
             onClose={() => setOpenAddClient(false)}
             onSuccess={() => {
               setOpenAddClient(false);
@@ -207,7 +216,7 @@ export default function Clients() {
             </DialogDescription>
           </DialogHeader>
           {selectedClient && (
-            <ClientForm 
+            <ClientForm
               client={selectedClient}
               onClose={() => setOpenEditClient(false)}
               onSuccess={() => {
@@ -240,8 +249,8 @@ export default function Clients() {
             <Button variant="outline" onClick={() => setOpenDeleteClient(false)}>
               Отмена
             </Button>
-            <Button 
-              variant="destructive" 
+            <Button
+              variant="destructive"
               onClick={handleConfirmDelete}
               disabled={deleteMutation.isPending}
             >

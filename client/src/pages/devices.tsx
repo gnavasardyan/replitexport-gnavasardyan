@@ -10,6 +10,16 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DeviceResponse } from "@shared/schema";
+import { useRouter } from 'wouter'; // Assuming wouter is used for routing
+
+// Back button component
+const BackButton = () => {
+  const [location, setLocation] = useRouter();
+  return (
+    <Button onClick={() => setLocation('/')}>Back to Main Menu</Button>
+  );
+};
+
 
 export default function Devices() {
   const { toast } = useToast();
@@ -44,7 +54,7 @@ export default function Devices() {
   // Get status badge styling based on device status
   const getDeviceBadge = (status: string | undefined) => {
     if (!status) return { variant: "outline" as const, className: "", label: "Нет статуса" };
-    
+
     switch (status.toLowerCase()) {
       case "ready":
         return { variant: "default" as const, className: "bg-green-500", label: "Готово" };
@@ -64,7 +74,7 @@ export default function Devices() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Устройства</h1>
       </div>
-
+      <BackButton/> {/* Added Back Button */}
       <Tabs defaultValue="all">
         <TabsList className="mb-4">
           <TabsTrigger value="all">Все устройства</TabsTrigger>
@@ -83,7 +93,7 @@ export default function Devices() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {devices.map((device: DeviceResponse) => {
                 const badgeInfo = getDeviceBadge(device.status);
-                
+
                 return (
                   <Card key={device.device_id} className="overflow-hidden">
                     <CardHeader className="pb-2">

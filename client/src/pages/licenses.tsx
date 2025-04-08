@@ -8,15 +8,23 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { API } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
   DialogTitle,
   DialogDescription
 } from "@/components/ui/dialog";
 import { LicenseResponse } from "@shared/schema";
 import { LicenseForm } from "@/components/licenses/license-form";
+import { useRouter } from 'wouter'; // Import useRouter
+
+const BackButton = () => {
+  const [location, setLocation] = useRouter();
+  return (
+    <Button onClick={() => setLocation('/')}>Back to Main Menu</Button>
+  );
+};
 
 export default function Licenses() {
   const { toast } = useToast();
@@ -52,7 +60,7 @@ export default function Licenses() {
       description: `${license.license_key} (${license.status || "Статус не указан"})`,
     });
   };
-  
+
   // Удаление лицензии
   const deleteMutation = useMutation({
     mutationFn: (id: number) => API.licenses.delete(id),
@@ -89,7 +97,7 @@ export default function Licenses() {
   // Get status badge styling based on license status
   const getLicenseBadge = (status: string | undefined) => {
     if (!status) return { variant: "outline" as const, className: "", label: "Нет статуса" };
-    
+
     switch (status) {
       case "AVAIL":
         return { variant: "default" as const, className: "bg-green-500", label: "Доступна" };
@@ -120,7 +128,8 @@ export default function Licenses() {
           <TabsTrigger value="blocked">Заблокированные</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="all" className="space-y-4">
+        <TabsContent value="all">
+          <BackButton /> {/* Added Back Button */}
           {isLoading ? (
             <div className="text-center py-8">Загрузка лицензий...</div>
           ) : error ? (
@@ -131,13 +140,13 @@ export default function Licenses() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {licenses.map((license: LicenseResponse) => {
                 const badgeInfo = getLicenseBadge(license.status);
-                
+
                 return (
                   <Card key={license.id} className="overflow-hidden">
                     <CardHeader className="pb-2">
                       <div className="flex justify-between items-start">
                         <CardTitle className="text-xl font-mono">{license.license_key}</CardTitle>
-                        <Badge 
+                        <Badge
                           variant={badgeInfo.variant}
                           className={badgeInfo.className}
                         >
@@ -176,14 +185,17 @@ export default function Licenses() {
         </TabsContent>
 
         <TabsContent value="avail">
+          <BackButton /> {/* Added Back Button */}
           <div className="text-center py-8">Функциональность фильтрации находится в разработке</div>
         </TabsContent>
 
         <TabsContent value="used">
+          <BackButton /> {/* Added Back Button */}
           <div className="text-center py-8">Функциональность фильтрации находится в разработке</div>
         </TabsContent>
 
         <TabsContent value="blocked">
+          <BackButton /> {/* Added Back Button */}
           <div className="text-center py-8">Функциональность фильтрации находится в разработке</div>
         </TabsContent>
       </Tabs>
@@ -197,7 +209,7 @@ export default function Licenses() {
               Заполните информацию для создания новой лицензии
             </DialogDescription>
           </DialogHeader>
-          <LicenseForm 
+          <LicenseForm
             onClose={() => setOpenAddLicense(false)}
             onSuccess={() => {
               setOpenAddLicense(false);
@@ -221,7 +233,7 @@ export default function Licenses() {
             </DialogDescription>
           </DialogHeader>
           {selectedLicense && (
-            <LicenseForm 
+            <LicenseForm
               license={selectedLicense}
               onClose={() => setOpenEditLicense(false)}
               onSuccess={() => {
@@ -251,8 +263,8 @@ export default function Licenses() {
             <Button variant="outline" onClick={() => setOpenDeleteLicense(false)}>
               Отмена
             </Button>
-            <Button 
-              variant="destructive" 
+            <Button
+              variant="destructive"
               onClick={handleConfirmDelete}
               disabled={deleteMutation.isPending}
             >
