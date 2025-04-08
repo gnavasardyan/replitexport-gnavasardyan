@@ -50,7 +50,7 @@ export function DeletePartnerDialog({
 
   const handleDelete = () => {
     if (partner) {
-      deleteMutation.mutate(partner.id);
+      deleteMutation.mutate(partner.partner_id);
     }
   };
 
