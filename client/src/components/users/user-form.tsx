@@ -67,7 +67,7 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [partners, setPartners] = useState<{ id: number; name: string }[]>([]);
-  const [clients, setClients] = useState<{ id: number; name: string }[]>([]);
+  const [clients, setClients] = useState<{ client_id: number; client_name: string }[]>([]);
 
   // Загружаем список партнеров и клиентов для селектов
   useEffect(() => {
@@ -303,8 +303,8 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
                   <SelectContent>
                     <SelectItem value="0">Не выбрано</SelectItem>
                     {clients.map((client) => (
-                      <SelectItem key={client.id} value={client.id.toString()}>
-                        {client.name}
+                      <SelectItem key={client.client_id} value={client.client_id.toString()}>
+                        {client.client_name}
                       </SelectItem>
                     ))}
                   </SelectContent>
