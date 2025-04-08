@@ -142,7 +142,7 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
 
       toast({
         title: user ? "Пользователь обновлен" : "Пользователь создан",
-        description: `${data.name} (${data.username}) успешно ${user ? "обновлен" : "создан"}.`,
+        description: `Пользователь успешно ${user ? "обновлен" : "создан"}.`,
       });
 
       onSuccess();
@@ -189,19 +189,7 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Полное имя*</FormLabel>
-              <FormControl>
-                <Input placeholder="Введите полное имя" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        
 
         <FormField
           control={form.control}
