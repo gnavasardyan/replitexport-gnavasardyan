@@ -20,9 +20,9 @@ import { ClientForm } from "@/components/clients/client-form";
 import { useNavigate } from 'wouter'; // Assuming wouter for routing
 
 function BackButton() {
-  const navigate = useNavigate();
+  const [, setLocation] = useLocation();
   return (
-    <Button onClick={() => navigate('/')}>Back to Main Menu</Button>
+    <Button onClick={() => setLocation('/')}>Back to Main Menu</Button>
   );
 }
 
