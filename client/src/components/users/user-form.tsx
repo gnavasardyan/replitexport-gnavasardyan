@@ -330,8 +330,8 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
               <FormItem>
                 <FormLabel>Партнер</FormLabel>
                 <Select 
-                  onValueChange={(value) => field.onChange(value ? parseInt(value) : undefined)} 
-                  value={field.value?.toString()}
+                  onValueChange={(value) => field.onChange(value === "0" ? undefined : parseInt(value))} 
+                  value={field.value?.toString() || "0"}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -339,7 +339,7 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="">Не выбрано</SelectItem>
+                    <SelectItem value="0">Не выбрано</SelectItem>
                     {partners.map((partner) => (
                       <SelectItem key={partner.id} value={partner.id.toString()}>
                         {partner.name}
@@ -359,8 +359,8 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
               <FormItem>
                 <FormLabel>Клиент</FormLabel>
                 <Select 
-                  onValueChange={(value) => field.onChange(value ? parseInt(value) : undefined)} 
-                  value={field.value?.toString()}
+                  onValueChange={(value) => field.onChange(value === "0" ? undefined : parseInt(value))} 
+                  value={field.value?.toString() || "0"}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -368,7 +368,7 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="">Не выбрано</SelectItem>
+                    <SelectItem value="0">Не выбрано</SelectItem>
                     {clients.map((client) => (
                       <SelectItem key={client.id} value={client.id.toString()}>
                         {client.name}
