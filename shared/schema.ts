@@ -90,7 +90,6 @@ export const partnerFormSchema = insertPartnerSchema.extend({
   ogrn: z.string().min(1, "ОГРН обязателен"),
   address: z.string().min(5, "Адрес обязателен"),
   email: z.string().email("Необходим действительный адрес электронной почты"),
-  apitoken: z.string().min(1, "API токен обязателен"),
 });
 
 export type PartnerResponse = z.infer<typeof partnerResponseSchema>;
