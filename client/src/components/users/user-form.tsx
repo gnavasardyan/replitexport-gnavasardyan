@@ -274,8 +274,8 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
                   <SelectContent>
                     <SelectItem value="0">Не выбрано</SelectItem>
                     {partners.map((partner) => (
-                      <SelectItem key={partner.id} value={partner.id.toString()}>
-                        {partner.name}
+                      <SelectItem key={partner.partner_id} value={partner.partner_id.toString()}>
+                        {partner.partner_name}
                       </SelectItem>
                     ))}
                   </SelectContent>
