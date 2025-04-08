@@ -43,7 +43,6 @@ const userFormSchema = z.object({
   status: z.enum(["ACTIVE", "CREATED", "CONFIRMED"], {
     required_error: "Выберите статус пользователя",
   }),
-  email_confirm_token: z.string(),
   partner_id: z.number({
     required_error: "Выберите партнера",
   }),
@@ -102,7 +101,6 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
       password: "", // Не показываем пароль даже при редактировании
       last_logon_time: user?.last_logon_time ? new Date(user.last_logon_time) : undefined,
       status: user?.status || "CREATED",
-      email_confirm_token: user?.email_confirm_token || "",
       partner_id: user?.partner_id,
       role: user?.role || "user",
       client_id: user?.client_id,
@@ -125,7 +123,6 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
       const apiData = {
         ...userData,
         status: data.status,
-        email_confirm_token: data.email_confirm_token || undefined,
         partner_id: data.partner_id || undefined,
         client_id: data.client_id || undefined,
       };
@@ -259,20 +256,6 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
                   <SelectItem value="CONFIRMED">Подтвержден</SelectItem>
                 </SelectContent>
               </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="email_confirm_token"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Токен подтверждения email</FormLabel>
-              <FormControl>
-                <Input placeholder="Токен подтверждения (опционально)" {...field} />
-              </FormControl>
               <FormMessage />
             </FormItem>
           )}
