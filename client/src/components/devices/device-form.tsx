@@ -8,7 +8,8 @@ import {
   InsertDevice, 
   DeviceResponse,
   DeviceStatusOptions, 
-  LicenseResponse 
+  LicenseResponse, 
+  ClientResponse 
 } from "@shared/schema";
 import { 
   Form, 
@@ -40,33 +41,44 @@ export function DeviceForm({ device, onClose, onSuccess }: DeviceFormProps) {
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [licenses, setLicenses] = useState<{ id: number; license_key: string }[]>([]);
+  const [clients, setClients] = useState<{ id: number; client_name: string }[]>([]);
   
   useEffect(() => {
-    // Загружаем список лицензий для селекта
-    const fetchLicenses = async () => {
+    // Загружаем список лицензий и клиентов для селекта
+    const fetchData = async () => {
       try {
-        const response = await API.licenses.getAll();
-        setLicenses(response.map(l => ({ id: l.id, license_key: l.license_key })));
+        const licensesResponse = await API.licenses.getAll();
+        setLicenses(licensesResponse.map(l => ({ id: l.id, license_key: l.license_key })));
+        
+        const clientsResponse = await API.clients.getAll();
+        setClients(clientsResponse.map(c => ({ id: c.id, client_name: c.client_name })));
       } catch (error) {
-        console.error("Ошибка при загрузке лицензий:", error);
+        console.error("Ошибка при загрузке данных:", error);
         toast({
           title: "Ошибка",
-          description: "Не удалось загрузить список лицензий",
+          description: "Не удалось загрузить необходимые данные",
           variant: "destructive",
         });
       }
     };
     
-    fetchLicenses();
+    fetchData();
   }, [toast]);
   
   const defaultValues = device
-    ? { ...device }
+    ? { 
+        status: device.status,
+        client_id: device.client_id,
+        license_id: device.license_id,
+        inst_id: device.inst_id,
+        os_version: device.os_version,
+        local_id: device.local_id
+      }
     : {
+        client_id: undefined,
         license_id: undefined,
         inst_id: "",
         os_version: "",
-        lm_version: "",
         local_id: "",
         status: "not_configured" as string
       };
@@ -97,7 +109,7 @@ export function DeviceForm({ device, onClose, onSuccess }: DeviceFormProps) {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<DeviceResponse> }) => API.devices.update(id, data),
+    mutationFn: ({ device_id, data }: { device_id: number; data: Partial<DeviceResponse> }) => API.devices.update(device_id, data),
     onSuccess: () => {
       toast({
         title: "Успех",
@@ -119,16 +131,50 @@ export function DeviceForm({ device, onClose, onSuccess }: DeviceFormProps) {
   const onSubmit = (data: InsertDevice) => {
     setIsSubmitting(true);
     
+    // Защита от null в поле status
+    const formattedData = {
+      ...data,
+      status: data.status || "not_configured"
+    };
+    
     if (device) {
-      updateMutation.mutate({ id: device.id, data });
+      updateMutation.mutate({ device_id: device.device_id, data: formattedData });
     } else {
-      createMutation.mutate(data);
+      createMutation.mutate(formattedData);
     }
   };
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="client_id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Клиент*</FormLabel>
+              <Select 
+                onValueChange={(value) => field.onChange(parseInt(value))}
+                value={field.value?.toString()}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Выберите клиента" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {clients.map((client) => (
+                    <SelectItem key={client.id} value={client.id.toString()}>
+                      {client.client_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <FormField
           control={form.control}
           name="license_id"
@@ -185,19 +231,7 @@ export function DeviceForm({ device, onClose, onSuccess }: DeviceFormProps) {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="lm_version"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Версия LM*</FormLabel>
-              <FormControl>
-                <Input placeholder="Введите версию LM" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+
 
         <FormField
           control={form.control}

@@ -124,8 +124,8 @@ export const API = {
       return res.json();
     },
     
-    getById: async (id: number): Promise<DeviceResponse> => {
-      const res = await apiRequest("GET", `/api/v1/devices/${id}`, undefined);
+    getById: async (device_id: number): Promise<DeviceResponse> => {
+      const res = await apiRequest("GET", `/api/v1/devices/${device_id}`, undefined);
       return res.json();
     },
     
@@ -134,13 +134,13 @@ export const API = {
       return res.json();
     },
     
-    update: async (id: number, device: Partial<DeviceResponse>): Promise<DeviceResponse> => {
-      const res = await apiRequest("PUT", `/api/v1/devices/${id}`, device);
+    update: async (device_id: number, device: Partial<DeviceResponse>): Promise<DeviceResponse> => {
+      const res = await apiRequest("PUT", `/api/v1/devices/${device_id}`, device);
       return res.json();
     },
     
-    delete: async (id: number): Promise<void> => {
-      await apiRequest("DELETE", `/api/v1/devices/${id}`, undefined);
+    delete: async (device_id: number): Promise<void> => {
+      await apiRequest("DELETE", `/api/v1/devices/${device_id}`, undefined);
     }
   },
   

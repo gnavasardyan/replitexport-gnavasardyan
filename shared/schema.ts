@@ -165,40 +165,37 @@ export type LicenseResponse = z.infer<typeof licenseResponseSchema>;
 
 // Device schema
 export const devices = pgTable("devices", {
-  id: serial("id").primaryKey(),
+  device_id: serial("device_id").primaryKey(),
+  client_id: integer("client_id").notNull(),
   license_id: integer("license_id").notNull(),
   inst_id: text("inst_id").notNull().unique(),
   os_version: text("os_version").notNull(),
-  lm_version: text("lm_version").notNull(),
-  local_id: text("local_id").notNull(),
   status: text("status").default("not_configured"),
-  registeredDate: timestamp("registered_date").defaultNow(),
+  local_id: text("local_id").notNull(),
 });
 
 export const insertDeviceSchema = createInsertSchema(devices).omit({
-  id: true,
-  registeredDate: true,
+  device_id: true,
 });
 
 export type Device = typeof devices.$inferSelect;
 export type InsertDevice = z.infer<typeof insertDeviceSchema>;
 
 export const deviceResponseSchema = z.object({
-  id: z.number(),
+  device_id: z.number(),
+  client_id: z.number(),
   license_id: z.number(),
   inst_id: z.string(),
   os_version: z.string(),
-  lm_version: z.string(),
-  local_id: z.string(),
   status: z.string(),
-  registeredDate: z.date().optional(),
+  local_id: z.string(),
 });
 
 export const deviceFormSchema = insertDeviceSchema.extend({
+  client_id: z.number({required_error: "Выберите клиента"}),
   license_id: z.number({required_error: "Выберите лицензию"}),
   inst_id: z.string().min(4, "ID установки обязателен"),
   os_version: z.string().min(2, "Версия ОС обязательна"),
-  lm_version: z.string().min(2, "Версия LM обязательна"),
   local_id: z.string().min(4, "Локальный ID обязателен"),
   status: z.enum(["not_configured", "initialization", "ready", "sync_error"], {
     required_error: "Выберите статус устройства",

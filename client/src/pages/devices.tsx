@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Pencil, Plus, Trash2, Eye } from "lucide-react";
+import { Pencil, Trash2, Eye } from "lucide-react";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { API } from "@/lib/api";
@@ -14,7 +14,6 @@ import { DeviceResponse } from "@shared/schema";
 export default function Devices() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [openAddDevice, setOpenAddDevice] = useState(false);
   const [openEditDevice, setOpenEditDevice] = useState(false);
   const [openDeleteDevice, setOpenDeleteDevice] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<DeviceResponse | null>(null);
@@ -24,10 +23,6 @@ export default function Devices() {
     queryKey: ["/api/v1/devices"],
     queryFn: API.devices.getAll,
   });
-
-  const handleAddDevice = () => {
-    setOpenAddDevice(true);
-  };
 
   const handleEditDevice = (device: DeviceResponse) => {
     setSelectedDevice(device);
@@ -42,15 +37,8 @@ export default function Devices() {
   const handleViewDevice = (device: DeviceResponse) => {
     toast({
       title: "Информация об устройстве",
-      description: `${device.name || device.deviceId} (${device.status || "Статус не указан"})`,
+      description: `ID: ${device.device_id}, Статус: ${device.status || "Не указан"}`,
     });
-  };
-
-  // Format date string to readable format
-  const formatDate = (dateString: string | Date | undefined) => {
-    if (!dateString) return "Не указано";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("ru-RU");
   };
 
   // Get status badge styling based on device status
@@ -58,16 +46,14 @@ export default function Devices() {
     if (!status) return { variant: "outline" as const, className: "", label: "Нет статуса" };
     
     switch (status.toLowerCase()) {
-      case "active":
-      case "online":
-        return { variant: "default" as const, className: "bg-green-500", label: "Онлайн" };
-      case "inactive":
-      case "offline":
-        return { variant: "outline" as const, className: "text-gray-500", label: "Офлайн" };
-      case "maintenance":
-        return { variant: "outline" as const, className: "text-amber-500", label: "Обслуживание" };
-      case "error":
-        return { variant: "outline" as const, className: "text-red-500", label: "Ошибка" };
+      case "ready":
+        return { variant: "default" as const, className: "bg-green-500", label: "Готово" };
+      case "not_configured":
+        return { variant: "outline" as const, className: "text-gray-500", label: "Не настроено" };
+      case "initialization":
+        return { variant: "outline" as const, className: "text-amber-500", label: "Инициализация" };
+      case "sync_error":
+        return { variant: "outline" as const, className: "text-red-500", label: "Ошибка синхронизации" };
       default:
         return { variant: "outline" as const, className: "", label: status };
     }
@@ -77,17 +63,13 @@ export default function Devices() {
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Устройства</h1>
-        <Button onClick={handleAddDevice} className="gap-2">
-          <Plus size={16} />
-          Добавить устройство
-        </Button>
       </div>
 
       <Tabs defaultValue="all">
         <TabsList className="mb-4">
           <TabsTrigger value="all">Все устройства</TabsTrigger>
-          <TabsTrigger value="online">Онлайн</TabsTrigger>
-          <TabsTrigger value="offline">Офлайн</TabsTrigger>
+          <TabsTrigger value="ready">Готовые</TabsTrigger>
+          <TabsTrigger value="not_configured">Не настроенные</TabsTrigger>
         </TabsList>
 
         <TabsContent value="all" className="space-y-4">
@@ -103,11 +85,11 @@ export default function Devices() {
                 const badgeInfo = getDeviceBadge(device.status);
                 
                 return (
-                  <Card key={device.id} className="overflow-hidden">
+                  <Card key={device.device_id} className="overflow-hidden">
                     <CardHeader className="pb-2">
                       <div className="flex justify-between items-start">
                         <CardTitle className="text-xl">
-                          {device.name || `Устройство ${device.deviceId}`}
+                          Устройство {device.device_id}
                         </CardTitle>
                         <Badge 
                           variant={badgeInfo.variant}
@@ -119,26 +101,12 @@ export default function Devices() {
                     </CardHeader>
                     <CardContent className="pb-2">
                       <div className="space-y-2 text-sm">
-                        <p><span className="font-medium">ID устройства:</span> {device.deviceId}</p>
-                        {device.model && (
-                          <p><span className="font-medium">Модель:</span> {device.model}</p>
-                        )}
-                        {device.serialNumber && (
-                          <p><span className="font-medium">Серийный номер:</span> {device.serialNumber}</p>
-                        )}
-                        {device.licenseId && (
-                          <p><span className="font-medium">ID лицензии:</span> {device.licenseId}</p>
-                        )}
-                        {device.macAddress && (
-                          <p><span className="font-medium">MAC-адрес:</span> {device.macAddress}</p>
-                        )}
-                        {device.ipAddress && (
-                          <p><span className="font-medium">IP-адрес:</span> {device.ipAddress}</p>
-                        )}
-                        <p><span className="font-medium">Дата регистрации:</span> {formatDate(device.registeredDate)}</p>
-                        {device.lastCheckin && (
-                          <p><span className="font-medium">Последняя проверка:</span> {formatDate(device.lastCheckin)}</p>
-                        )}
+                        <p><span className="font-medium">ID устройства:</span> {device.device_id}</p>
+                        <p><span className="font-medium">ID клиента:</span> {device.client_id}</p>
+                        <p><span className="font-medium">ID лицензии:</span> {device.license_id}</p>
+                        <p><span className="font-medium">ID установки:</span> {device.inst_id}</p>
+                        <p><span className="font-medium">Версия ОС:</span> {device.os_version}</p>
+                        <p><span className="font-medium">MAC-адрес:</span> {device.local_id}</p>
                       </div>
                     </CardContent>
                     <Separator />
@@ -165,26 +133,14 @@ export default function Devices() {
           )}
         </TabsContent>
 
-        <TabsContent value="online">
+        <TabsContent value="ready">
           <div className="text-center py-8">Функциональность находится в разработке</div>
         </TabsContent>
 
-        <TabsContent value="offline">
+        <TabsContent value="not_configured">
           <div className="text-center py-8">Функциональность находится в разработке</div>
         </TabsContent>
       </Tabs>
-
-      {/* Add Device Dialog - Placeholder for now */}
-      <Dialog open={openAddDevice} onOpenChange={setOpenAddDevice}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Добавить новое устройство</DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <p>Форма для добавления нового устройства - находится в разработке</p>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Edit Device Dialog - Placeholder for now */}
       <Dialog open={openEditDevice} onOpenChange={setOpenEditDevice}>
@@ -207,7 +163,7 @@ export default function Devices() {
           <div className="py-4">
             <p>Вы уверены, что хотите удалить это устройство?</p>
             {selectedDevice && <p className="font-bold">
-              {selectedDevice.name || `Устройство ${selectedDevice.deviceId}`}
+              Устройство {selectedDevice.device_id}
             </p>}
           </div>
           <div className="flex justify-end space-x-2">

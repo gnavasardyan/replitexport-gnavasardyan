@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Pencil, Plus, Trash2, Eye, Download } from "lucide-react";
+import { Pencil, Trash2, Eye, Download } from "lucide-react";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { API } from "@/lib/api";
@@ -69,10 +69,6 @@ export default function Updates() {
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Обновления</h1>
-        <Button onClick={handleAddUpdate} className="gap-2">
-          <Plus size={16} />
-          Добавить обновление
-        </Button>
       </div>
 
       <Tabs defaultValue="all">
