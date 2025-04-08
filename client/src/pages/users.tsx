@@ -8,20 +8,12 @@ import { API } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { UserResponse } from "@shared/schema";
-import { useNavigate } from 'wouter'; // Import useNavigate
 
 // Импортируем наши компоненты
 import { UserCard } from "@/components/users/user-card";
 import { UserForm } from "@/components/users/user-form";
 import { DeleteUserDialog } from "@/components/users/delete-user-dialog";
 import { UserDetails } from "@/components/users/user-details";
-
-const BackButton = () => {
-  const navigate = useNavigate();
-  return (
-    <Button onClick={() => navigate('/')}>Back to Main Menu</Button> // Assumes '/' is the main menu route
-  );
-};
 
 export default function Users() {
   const { toast } = useToast();
@@ -32,7 +24,6 @@ export default function Users() {
   const [openViewUser, setOpenViewUser] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserResponse | null>(null);
   const [activeTab, setActiveTab] = useState("all");
-  const navigate = useNavigate(); //Import useNavigate
 
   // Получаем пользователей
   const { data: users = [], isLoading, error, refetch } = useQuery({
@@ -95,7 +86,6 @@ export default function Users() {
 
   return (
     <div className="container mx-auto p-4">
-      <BackButton /> {/* Added Back Button */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Пользователи</h1>
         <Button onClick={handleAddUser} className="gap-2">
