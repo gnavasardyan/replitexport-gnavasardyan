@@ -33,7 +33,7 @@ export function PartnerList() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [typeFilter, setTypeFilter] = useState<string>("");
-  
+
   const { data: partners, isLoading, error } = useQuery({
     queryKey: ['/api/v1/partners/'],
     staleTime: 10000
@@ -45,13 +45,13 @@ export function PartnerList() {
       partner.partner_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       partner.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       partner.inn.toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     // Status filter
     const matchesStatus = !statusFilter || (partner.status && partner.status === statusFilter);
-    
+
     // Type filter
     const matchesType = !typeFilter || (partner.type && partner.type === typeFilter);
-    
+
     return matchesSearch && matchesStatus && matchesType;
   }) : [];
 
@@ -161,7 +161,7 @@ export function PartnerList() {
               ))}
             </SelectContent>
           </Select>
-          
+
           <Select value={typeFilter} onValueChange={setTypeFilter}>
             <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="All Types" />
@@ -176,7 +176,7 @@ export function PartnerList() {
             </SelectContent>
           </Select>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm">
             <Download className="h-4 w-4 mr-2" />
