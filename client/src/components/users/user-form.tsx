@@ -129,10 +129,9 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
       const apiData = {
         ...userData,
         status: data.status,
-
         email_confirm_token: data.email_confirm_token || undefined,
-        partner_id: data.partner_id,
-        client_id: data.client_id,
+        partner_id: data.partner_id || undefined,
+        client_id: data.client_id || undefined,
       };
 
       let response;
