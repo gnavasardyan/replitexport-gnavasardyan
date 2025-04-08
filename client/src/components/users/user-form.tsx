@@ -111,6 +111,15 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
     setIsSubmitting(true);
     try {
       // Преобразуем данные для API
+      if (!data.partner_id) {
+        toast({
+          title: "Ошибка",
+          description: "Выберите партнера",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const userData: InsertUser = {
         email: data.email,
         password: data.password,
@@ -120,13 +129,7 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
         client_id: Number(data.client_id),
       };
 
-      // Дополнительные поля для API
-      const apiData = {
-        ...userData,
-        status: data.status,
-        partner_id: Number(data.partner_id),
-        client_id: Number(data.client_id),
-      };
+      const apiData = userData;
 
       let response;
       if (user) {
@@ -271,8 +274,8 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
                   <SelectContent>
                     <SelectItem value="0">Не выбрано</SelectItem>
                     {partners.map((partner) => (
-                      <SelectItem key={partner.partner_id} value={partner.partner_id.toString()}>
-                        {partner.partner_name}
+                      <SelectItem key={partner.id} value={partner.id.toString()}>
+                        {partner.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -300,8 +303,8 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
                   <SelectContent>
                     <SelectItem value="0">Не выбрано</SelectItem>
                     {clients.map((client) => (
-                      <SelectItem key={client.client_id} value={client.client_id.toString()}>
-                        {client.client_name}
+                      <SelectItem key={client.id} value={client.id.toString()}>
+                        {client.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
