@@ -85,11 +85,12 @@ export const partnerUpdateSchema = z.object({
 
 export const partnerFormSchema = insertPartnerSchema.extend({
   partner_name: z.string().min(2, "Наименование партнера обязательно"),
-  inn: z.string().min(10, "ИНН обязателен и должен содержать не менее 10 символов"),
-  kpp: z.string().min(9, "КПП обязателен и должен содержать не менее 9 символов"),
-  ogrn: z.string().min(13, "ОГРН обязателен и должен содержать не менее 13 символов"),
+  inn: z.string().min(1, "ИНН обязателен"),
+  kpp: z.string().min(1, "КПП обязателен"),
+  ogrn: z.string().min(1, "ОГРН обязателен"),
   address: z.string().min(5, "Адрес обязателен"),
   email: z.string().email("Необходим действительный адрес электронной почты"),
+  apitoken: z.string().min(1, "API токен обязателен"),
 });
 
 export type PartnerResponse = z.infer<typeof partnerResponseSchema>;
