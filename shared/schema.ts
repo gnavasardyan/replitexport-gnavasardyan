@@ -43,15 +43,15 @@ export type UserResponse = z.infer<typeof userResponseSchema>;
 // Partner schema
 export const partners = pgTable("partners", {
   id: serial("id").primaryKey(),
-  name: text("name").notNull(),
-  type: text("type").notNull(),
-  status: text("status").notNull().default("active"),
+  partner_name: text("partner_name").notNull(),
+  inn: text("inn").notNull(),
+  kpp: text("kpp").notNull(),
+  ogrn: text("ogrn").notNull(),
+  address: text("address").notNull(),
   email: text("email").notNull(),
-  phone: text("phone").notNull(),
-  location: text("location"),
-  joinedDate: text("joined_date").notNull(),
-  contractCount: text("contract_count"),
-  address: text("address"),
+  apitoken: text("apitoken").notNull(),
+  status: text("status").notNull().default("active"),
+  type: text("type").notNull().default("provider"),
 });
 
 export const insertPartnerSchema = createInsertSchema(partners).omit({
@@ -63,22 +63,25 @@ export type InsertPartner = z.infer<typeof insertPartnerSchema>;
 
 export const partnerResponseSchema = z.object({
   id: z.number(),
-  name: z.string(),
-  type: z.string(),
-  status: z.string(),
+  partner_name: z.string(),
+  inn: z.string(),
+  kpp: z.string(),
+  ogrn: z.string(),
+  address: z.string(),
   email: z.string().email(),
-  phone: z.string(),
-  location: z.string().optional(),
-  joinedDate: z.string(),
-  contractCount: z.string().optional(),
-  address: z.string().optional(),
+  apitoken: z.string(),
+  status: z.string().optional(),
+  type: z.string().optional(),
 });
 
 export const partnerFormSchema = insertPartnerSchema.extend({
-  name: z.string().min(2, "Partner name is required"),
-  email: z.string().email("Valid email address is required"),
-  phone: z.string().min(6, "Phone number is required"),
-  type: z.string().min(1, "Partner type is required"),
+  partner_name: z.string().min(2, "Наименование партнера обязательно"),
+  inn: z.string().min(10, "ИНН обязателен и должен содержать не менее 10 символов"),
+  kpp: z.string().min(9, "КПП обязателен и должен содержать не менее 9 символов"),
+  ogrn: z.string().min(13, "ОГРН обязателен и должен содержать не менее 13 символов"),
+  address: z.string().min(5, "Адрес обязателен"),
+  email: z.string().email("Необходим действительный адрес электронной почты"),
+  apitoken: z.string().min(6, "API-токен обязателен и должен содержать не менее 6 символов"),
 });
 
 export type PartnerResponse = z.infer<typeof partnerResponseSchema>;
@@ -86,13 +89,10 @@ export type PartnerResponse = z.infer<typeof partnerResponseSchema>;
 // Client schema
 export const clients = pgTable("clients", {
   id: serial("id").primaryKey(),
-  name: text("name").notNull(),
-  contactPerson: text("contact_person"),
-  email: text("email").notNull(),
-  phone: text("phone"),
-  address: text("address"),
-  status: text("status").default("active"),
-  industry: text("industry"),
+  partner_id: integer("partner_id").notNull(),
+  client_name: text("client_name").notNull(),
+  inn: text("inn").notNull(),
+  type: text("type").notNull().default("COMPANY"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -106,14 +106,18 @@ export type InsertClient = z.infer<typeof insertClientSchema>;
 
 export const clientResponseSchema = z.object({
   id: z.number(),
-  name: z.string(),
-  contactPerson: z.string().optional(),
-  email: z.string().email(),
-  phone: z.string().optional(),
-  address: z.string().optional(),
-  status: z.string().optional(),
-  industry: z.string().optional(),
+  partner_id: z.number(),
+  client_name: z.string(),
+  inn: z.string(),
+  type: z.string(),
   createdAt: z.date().optional(),
+});
+
+export const clientFormSchema = insertClientSchema.extend({
+  partner_id: z.number({required_error: "Выберите партнера"}),
+  client_name: z.string().min(2, "Наименование клиента обязательно"),
+  inn: z.string().min(10, "ИНН обязателен и должен содержать не менее 10 символов"),
+  type: z.string({required_error: "Выберите тип клиента"}).default("COMPANY"),
 });
 
 export type ClientResponse = z.infer<typeof clientResponseSchema>;
@@ -121,14 +125,10 @@ export type ClientResponse = z.infer<typeof clientResponseSchema>;
 // License schema
 export const licenses = pgTable("licenses", {
   id: serial("id").primaryKey(),
-  licenseKey: text("license_key").notNull().unique(),
-  clientId: integer("client_id"),
+  client_id: integer("client_id").notNull(),
+  license_key: text("license_key").notNull().unique(),
+  status: text("status").notNull().default("AVAIL"),
   issuedDate: timestamp("issued_date").defaultNow(),
-  expiryDate: timestamp("expiry_date"),
-  status: text("status").default("active"),
-  features: text("features"),
-  maxDevices: integer("max_devices").default(1),
-  notes: text("notes"),
 });
 
 export const insertLicenseSchema = createInsertSchema(licenses).omit({
@@ -141,37 +141,43 @@ export type InsertLicense = z.infer<typeof insertLicenseSchema>;
 
 export const licenseResponseSchema = z.object({
   id: z.number(),
-  licenseKey: z.string(),
-  clientId: z.number().optional(),
+  client_id: z.number(),
+  license_key: z.string(),
+  status: z.string(),
   issuedDate: z.date().optional(),
-  expiryDate: z.date().optional(),
-  status: z.string().optional(),
-  features: z.string().optional(),
-  maxDevices: z.number().optional(),
-  notes: z.string().optional(),
 });
+
+export const licenseFormSchema = insertLicenseSchema.extend({
+  client_id: z.number({required_error: "Выберите клиента"}),
+  license_key: z.string().min(6, "Лицензионный ключ обязателен и должен содержать не менее 6 символов"),
+  status: z.enum(["AVAIL", "USED", "BLOCKED"], {
+    required_error: "Выберите статус лицензии",
+  }).default("AVAIL"),
+});
+
+export const LicenseStatusOptions = [
+  { label: "Доступна", value: "AVAIL" },
+  { label: "Используется", value: "USED" },
+  { label: "Заблокирована", value: "BLOCKED" },
+];
 
 export type LicenseResponse = z.infer<typeof licenseResponseSchema>;
 
 // Device schema
 export const devices = pgTable("devices", {
   id: serial("id").primaryKey(),
-  deviceId: text("device_id").notNull().unique(),
-  licenseId: integer("license_id"),
-  name: text("name"),
-  model: text("model"),
-  serialNumber: text("serial_number"),
-  status: text("status").default("active"),
-  lastCheckin: timestamp("last_checkin"),
-  macAddress: text("mac_address"),
-  ipAddress: text("ip_address"),
+  license_id: integer("license_id").notNull(),
+  inst_id: text("inst_id").notNull().unique(),
+  os_version: text("os_version").notNull(),
+  lm_version: text("lm_version").notNull(),
+  local_id: text("local_id").notNull(),
+  status: text("status").default("not_configured"),
   registeredDate: timestamp("registered_date").defaultNow(),
 });
 
 export const insertDeviceSchema = createInsertSchema(devices).omit({
   id: true,
   registeredDate: true,
-  lastCheckin: true,
 });
 
 export type Device = typeof devices.$inferSelect;
@@ -179,17 +185,32 @@ export type InsertDevice = z.infer<typeof insertDeviceSchema>;
 
 export const deviceResponseSchema = z.object({
   id: z.number(),
-  deviceId: z.string(),
-  licenseId: z.number().optional(),
-  name: z.string().optional(),
-  model: z.string().optional(),
-  serialNumber: z.string().optional(),
-  status: z.string().optional(),
-  lastCheckin: z.date().optional(),
-  macAddress: z.string().optional(),
-  ipAddress: z.string().optional(),
+  license_id: z.number(),
+  inst_id: z.string(),
+  os_version: z.string(),
+  lm_version: z.string(),
+  local_id: z.string(),
+  status: z.string(),
   registeredDate: z.date().optional(),
 });
+
+export const deviceFormSchema = insertDeviceSchema.extend({
+  license_id: z.number({required_error: "Выберите лицензию"}),
+  inst_id: z.string().min(4, "ID установки обязателен"),
+  os_version: z.string().min(2, "Версия ОС обязательна"),
+  lm_version: z.string().min(2, "Версия LM обязательна"),
+  local_id: z.string().min(4, "Локальный ID обязателен"),
+  status: z.enum(["not_configured", "initialization", "ready", "sync_error"], {
+    required_error: "Выберите статус устройства",
+  }).default("not_configured"),
+});
+
+export const DeviceStatusOptions = [
+  { label: "Не настроено", value: "not_configured" },
+  { label: "Инициализация", value: "initialization" },
+  { label: "Готово", value: "ready" },
+  { label: "Ошибка синхронизации", value: "sync_error" },
+];
 
 export type DeviceResponse = z.infer<typeof deviceResponseSchema>;
 

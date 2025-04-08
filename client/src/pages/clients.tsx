@@ -4,12 +4,20 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pencil, Plus, Trash2, Eye } from "lucide-react";
 import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { API } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle,
+  DialogDescription,
+  DialogFooter 
+} from "@/components/ui/dialog";
 import { ClientResponse } from "@shared/schema";
+import { ClientForm } from "@/components/clients/client-form";
 
 export default function Clients() {
   const { toast } = useToast();
@@ -42,8 +50,34 @@ export default function Clients() {
   const handleViewClient = (client: ClientResponse) => {
     toast({
       title: "Информация о клиенте",
-      description: `${client.name} (${client.email})`,
+      description: `${client.client_name} (ИНН: ${client.inn})`,
     });
+  };
+  
+  // Удаление клиента
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => API.clients.delete(id),
+    onSuccess: () => {
+      toast({
+        title: "Успех",
+        description: "Клиент успешно удален",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/v1/clients"] });
+      setOpenDeleteClient(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Ошибка",
+        description: `Не удалось удалить клиента: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleConfirmDelete = () => {
+    if (selectedClient) {
+      deleteMutation.mutate(selectedClient.id);
+    }
   };
 
   // Format date string to readable format
@@ -83,32 +117,16 @@ export default function Clients() {
                 <Card key={client.id} className="overflow-hidden">
                   <CardHeader className="pb-2">
                     <div className="flex justify-between items-start">
-                      <CardTitle className="text-xl">{client.name}</CardTitle>
-                      {client.status && (
-                        <Badge 
-                          variant={client.status === "active" ? "default" : "outline"}
-                          className={client.status === "active" ? "bg-green-500" : ""}
-                        >
-                          {client.status === "active" ? "Активный" : client.status}
-                        </Badge>
-                      )}
+                      <CardTitle className="text-xl">{client.client_name}</CardTitle>
+                      <Badge variant="outline" className="bg-green-500 text-white">
+                        {client.type}
+                      </Badge>
                     </div>
                   </CardHeader>
                   <CardContent className="pb-2">
                     <div className="space-y-2 text-sm">
-                      <p><span className="font-medium">Email:</span> {client.email}</p>
-                      {client.phone && (
-                        <p><span className="font-medium">Телефон:</span> {client.phone}</p>
-                      )}
-                      {client.address && (
-                        <p><span className="font-medium">Адрес:</span> {client.address}</p>
-                      )}
-                      {client.contactPerson && (
-                        <p><span className="font-medium">Контактное лицо:</span> {client.contactPerson}</p>
-                      )}
-                      {client.industry && (
-                        <p><span className="font-medium">Отрасль:</span> {client.industry}</p>
-                      )}
+                      <p><span className="font-medium">ИНН:</span> {client.inn}</p>
+                      <p><span className="font-medium">ID партнера:</span> {client.partner_id}</p>
                       {client.createdAt && (
                         <p><span className="font-medium">Создан:</span> {formatDate(client.createdAt)}</p>
                       )}
@@ -146,46 +164,78 @@ export default function Clients() {
         </TabsContent>
       </Tabs>
 
-      {/* Add Client Dialog - Placeholder for now */}
+      {/* Add Client Dialog */}
       <Dialog open={openAddClient} onOpenChange={setOpenAddClient}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Добавить нового клиента</DialogTitle>
+            <DialogDescription>
+              Заполните форму для создания нового клиента
+            </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
-            <p>Форма для добавления нового клиента - находится в разработке</p>
-          </div>
+          <ClientForm 
+            onClose={() => setOpenAddClient(false)}
+            onSuccess={() => {
+              setOpenAddClient(false);
+              queryClient.invalidateQueries({ queryKey: ['/api/v1/clients'] });
+              toast({
+                title: "Успех",
+                description: "Клиент успешно добавлен",
+              });
+            }}
+          />
         </DialogContent>
       </Dialog>
 
-      {/* Edit Client Dialog - Placeholder for now */}
+      {/* Edit Client Dialog */}
       <Dialog open={openEditClient} onOpenChange={setOpenEditClient}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Изменить данные клиента</DialogTitle>
+            <DialogDescription>
+              Отредактируйте информацию о клиенте
+            </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
-            <p>Форма для редактирования клиента - находится в разработке</p>
-          </div>
+          {selectedClient && (
+            <ClientForm 
+              client={selectedClient}
+              onClose={() => setOpenEditClient(false)}
+              onSuccess={() => {
+                setOpenEditClient(false);
+                queryClient.invalidateQueries({ queryKey: ['/api/v1/clients'] });
+                toast({
+                  title: "Успех",
+                  description: "Данные клиента успешно обновлены",
+                });
+              }}
+            />
+          )}
         </DialogContent>
       </Dialog>
 
-      {/* Delete Client Dialog - Placeholder for now */}
+      {/* Delete Client Dialog */}
       <Dialog open={openDeleteClient} onOpenChange={setOpenDeleteClient}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Удалить клиента</DialogTitle>
+            <DialogDescription>
+              Внимание! Это действие нельзя отменить.
+            </DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <p>Вы уверены, что хотите удалить этого клиента?</p>
-            {selectedClient && <p className="font-bold">{selectedClient.name}</p>}
+            {selectedClient && <p className="font-bold">{selectedClient.client_name}</p>}
           </div>
           <div className="flex justify-end space-x-2">
             <Button variant="outline" onClick={() => setOpenDeleteClient(false)}>
               Отмена
             </Button>
-            <Button variant="destructive">
-              Удалить
+            <Button 
+              variant="destructive" 
+              onClick={handleConfirmDelete}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? "Удаление..." : "Удалить"}
             </Button>
           </div>
         </DialogContent>

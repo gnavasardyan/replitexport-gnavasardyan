@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { API } from "@/lib/api";
-import { Partner, PartnerTypes, PartnerStatuses } from "@/types/partner";
-import { partnerFormSchema } from "@shared/schema";
+import { partnerFormSchema, InsertPartner, PartnerResponse } from "@shared/schema";
 import { 
   Form, 
   FormControl, 
@@ -26,32 +25,28 @@ import {
 import { useToast } from "@/hooks/use-toast";
 
 interface PartnerFormProps {
-  partner?: Partner;
+  partner?: PartnerResponse;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-// Helper to format today's date to YYYY-MM-DD
-const formatToday = () => {
-  return new Date().toISOString().split('T')[0];
-};
-
 export function PartnerForm({ partner, onClose, onSuccess }: PartnerFormProps) {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const defaultValues = partner
     ? { ...partner }
     : {
-        name: "",
-        type: "",
-        status: "active",
-        email: "",
-        phone: "",
-        location: "",
-        joinedDate: formatToday(),
-        contractCount: "0 Active",
+        partner_name: "",
+        inn: "",
+        kpp: "",
+        ogrn: "",
         address: "",
+        email: "",
+        apitoken: "",
+        type: "provider",
+        status: "active",
       };
 
   const form = useForm({
@@ -60,18 +55,19 @@ export function PartnerForm({ partner, onClose, onSuccess }: PartnerFormProps) {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: any) => API.partners.create(data),
+    mutationFn: (data: InsertPartner) => API.partners.create(data),
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Partner created successfully",
+        title: "Успех",
+        description: "Партнер успешно создан",
       });
+      queryClient.invalidateQueries({ queryKey: ["/api/v1/partners"] });
       onSuccess();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({
-        title: "Error",
-        description: `Failed to create partner: ${error.message}`,
+        title: "Ошибка",
+        description: `Не удалось создать партнера: ${error.message}`,
         variant: "destructive",
       });
       setIsSubmitting(false);
@@ -79,25 +75,26 @@ export function PartnerForm({ partner, onClose, onSuccess }: PartnerFormProps) {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: any }) => API.partners.update(id, data),
+    mutationFn: ({ id, data }: { id: number; data: Partial<PartnerResponse> }) => API.partners.update(id, data),
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Partner updated successfully",
+        title: "Успех",
+        description: "Партнер успешно обновлен",
       });
+      queryClient.invalidateQueries({ queryKey: ["/api/v1/partners"] });
       onSuccess();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({
-        title: "Error",
-        description: `Failed to update partner: ${error.message}`,
+        title: "Ошибка",
+        description: `Не удалось обновить партнера: ${error.message}`,
         variant: "destructive",
       });
       setIsSubmitting(false);
     },
   });
 
-  const onSubmit = (data: any) => {
+  const onSubmit = (data: InsertPartner) => {
     setIsSubmitting(true);
     
     if (partner) {
@@ -113,12 +110,96 @@ export function PartnerForm({ partner, onClose, onSuccess }: PartnerFormProps) {
         <div className="grid grid-cols-1 gap-y-4 gap-x-4 sm:grid-cols-2">
           <FormField
             control={form.control}
-            name="name"
+            name="partner_name"
             render={({ field }) => (
               <FormItem className="sm:col-span-2">
-                <FormLabel>Partner Name</FormLabel>
+                <FormLabel>Наименование партнера*</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter partner name" {...field} />
+                  <Input placeholder="Введите наименование партнера" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="inn"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>ИНН*</FormLabel>
+                <FormControl>
+                  <Input placeholder="Введите ИНН" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="kpp"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>КПП*</FormLabel>
+                <FormControl>
+                  <Input placeholder="Введите КПП" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="ogrn"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>ОГРН*</FormLabel>
+                <FormControl>
+                  <Input placeholder="Введите ОГРН" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email*</FormLabel>
+                <FormControl>
+                  <Input placeholder="email@example.com" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="address"
+            render={({ field }) => (
+              <FormItem className="sm:col-span-2">
+                <FormLabel>Адрес*</FormLabel>
+                <FormControl>
+                  <Textarea placeholder="Полный адрес" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="apitoken"
+            render={({ field }) => (
+              <FormItem className="sm:col-span-2">
+                <FormLabel>API токен*</FormLabel>
+                <FormControl>
+                  <Input placeholder="Введите API токен" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -130,19 +211,17 @@ export function PartnerForm({ partner, onClose, onSuccess }: PartnerFormProps) {
             name="type"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Partner Type</FormLabel>
+                <FormLabel>Тип партнера</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select type" />
+                      <SelectValue placeholder="Выберите тип" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {PartnerTypes.map((type) => (
-                      <SelectItem key={type.value} value={type.value}>
-                        {type.label}
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="provider">Провайдер</SelectItem>
+                    <SelectItem value="distributor">Дистрибьютор</SelectItem>
+                    <SelectItem value="reseller">Реселлер</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -155,105 +234,19 @@ export function PartnerForm({ partner, onClose, onSuccess }: PartnerFormProps) {
             name="status"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Status</FormLabel>
+                <FormLabel>Статус</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select status" />
+                      <SelectValue placeholder="Выберите статус" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {PartnerStatuses.map((status) => (
-                      <SelectItem key={status.value} value={status.value}>
-                        {status.label}
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="active">Активный</SelectItem>
+                    <SelectItem value="inactive">Неактивный</SelectItem>
+                    <SelectItem value="suspended">Приостановлен</SelectItem>
                   </SelectContent>
                 </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem className="sm:col-span-2">
-                <FormLabel>Email Address</FormLabel>
-                <FormControl>
-                  <Input placeholder="email@example.com" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="phone"
-            render={({ field }) => (
-              <FormItem className="sm:col-span-2">
-                <FormLabel>Phone Number</FormLabel>
-                <FormControl>
-                  <Input placeholder="+1 (555) 123-4567" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="location"
-            render={({ field }) => (
-              <FormItem className="sm:col-span-2">
-                <FormLabel>Location</FormLabel>
-                <FormControl>
-                  <Input placeholder="City, Country" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="address"
-            render={({ field }) => (
-              <FormItem className="sm:col-span-2">
-                <FormLabel>Address</FormLabel>
-                <FormControl>
-                  <Textarea placeholder="Full address" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="joinedDate"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Joined Date</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="contractCount"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Contracts</FormLabel>
-                <FormControl>
-                  <Input placeholder="e.g., 2 Active" {...field} />
-                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -267,13 +260,13 @@ export function PartnerForm({ partner, onClose, onSuccess }: PartnerFormProps) {
             onClick={onClose}
             disabled={isSubmitting}
           >
-            Cancel
+            Отмена
           </Button>
           <Button
             type="submit"
             disabled={isSubmitting}
           >
-            {isSubmitting ? "Saving..." : partner ? "Update Partner" : "Add Partner"}
+            {isSubmitting ? "Сохранение..." : partner ? "Обновить партнера" : "Добавить партнера"}
           </Button>
         </div>
       </form>
