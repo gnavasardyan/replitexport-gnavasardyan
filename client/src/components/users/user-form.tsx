@@ -114,18 +114,18 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
       const userData: InsertUser = {
         email: data.email,
         password: data.password,
-        role: data.role,
-        status: data.status,
-        partner_id: data.partner_id,
-        client_id: data.client_id,
+        role: data.role || "user",
+        status: data.status || "CREATED",
+        partner_id: Number(data.partner_id),
+        client_id: Number(data.client_id),
       };
 
       // Дополнительные поля для API
       const apiData = {
         ...userData,
         status: data.status,
-        partner_id: data.partner_id || undefined,
-        client_id: data.client_id || undefined,
+        partner_id: Number(data.partner_id),
+        client_id: Number(data.client_id),
       };
 
       let response;
