@@ -18,6 +18,8 @@ import {
 import { ClientResponse } from "@shared/schema";
 import { ClientForm } from "@/components/clients/client-form";
 
+import { Sidebar } from "@/components/layout/sidebar";
+
 export default function Clients() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -93,7 +95,10 @@ export default function Clients() {
   );
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="min-h-screen flex flex-col md:flex-row">
+      <Sidebar />
+      <main className="flex-1 overflow-x-hidden bg-gray-50">
+        <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Клиенты</h1>
         <Button onClick={handleAddClient} className="gap-2">
@@ -250,6 +255,8 @@ export default function Clients() {
           </div>
         </DialogContent>
       </Dialog>
+        </div>
+      </main>
     </div>
   );
 }

@@ -11,6 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DeviceResponse } from "@shared/schema";
 
+import { Sidebar } from "@/components/layout/sidebar";
+
 export default function Devices() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -60,7 +62,10 @@ export default function Devices() {
   };
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="min-h-screen flex flex-col md:flex-row">
+      <Sidebar />
+      <main className="flex-1 overflow-x-hidden bg-gray-50">
+        <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Устройства</h1>
       </div>
@@ -176,6 +181,8 @@ export default function Devices() {
           </div>
         </DialogContent>
       </Dialog>
+        </div>
+      </main>
     </div>
   );
 }

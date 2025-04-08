@@ -15,6 +15,8 @@ import { UserForm } from "@/components/users/user-form";
 import { DeleteUserDialog } from "@/components/users/delete-user-dialog";
 import { UserDetails } from "@/components/users/user-details";
 
+import { Sidebar } from "@/components/layout/sidebar";
+
 export default function Users() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -85,7 +87,10 @@ export default function Users() {
   };
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="min-h-screen flex flex-col md:flex-row">
+      <Sidebar />
+      <main className="flex-1 overflow-x-hidden bg-gray-50">
+        <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Пользователи</h1>
         <Button onClick={handleAddUser} className="gap-2">
@@ -218,6 +223,8 @@ export default function Users() {
         onClose={() => setOpenDeleteUser(false)}
         onDelete={handleDeleteConfirm}
       />
+        </div>
+      </main>
     </div>
   );
 }
