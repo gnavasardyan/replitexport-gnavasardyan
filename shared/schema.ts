@@ -31,6 +31,11 @@ export const userResponseSchema = z.object({
   email: z.string().email().optional(),
   role: z.string().optional(),
   createdAt: z.date().optional(),
+  status: z.enum(["ACTIVE", "CREATED", "CONFIRMED"]).optional(),
+  last_logon_time: z.date().optional(),
+  email_confirm_token: z.string().optional(),
+  partner_id: z.number().optional(),
+  client_id: z.number().optional(),
 });
 
 export type UserResponse = z.infer<typeof userResponseSchema>;
