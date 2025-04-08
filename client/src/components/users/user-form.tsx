@@ -138,7 +138,7 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
       let response;
       if (user) {
         // Обновление существующего пользователя
-        response = await apiRequest("PUT", `/api/v1/users/${user.id}`, apiData);
+        response = await apiRequest("PUT", `/api/v1/users/${user.user_id}`, apiData);
       } else {
         // Создание нового пользователя
         response = await API.users.create(userData);

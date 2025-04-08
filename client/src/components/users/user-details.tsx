@@ -84,7 +84,7 @@ export function UserDetails({ open, onOpenChange, user }: UserDetailsProps) {
               <Separator className="my-2" />
               <div className="grid grid-cols-2 gap-2">
                 <div className="text-sm text-muted-foreground">ID пользователя</div>
-                <div className="text-sm font-medium">{user.id}</div>
+                <div className="text-sm font-medium">{user.user_id}</div>
 
                 <div className="text-sm text-muted-foreground">Дата создания</div>
                 <div className="text-sm font-medium">{formatDate(user.createdAt)}</div>
