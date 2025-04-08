@@ -195,9 +195,8 @@ export function ClientForm({ client, onClose, onSuccess }: ClientFormProps) {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="COMPANY">Компания</SelectItem>
-                  <SelectItem value="INDIVIDUAL">Физическое лицо</SelectItem>
-                  <SelectItem value="GOVERNMENT">Государственная организация</SelectItem>
+                  <SelectItem value="COMPANY">COMPANY</SelectItem>
+                  <SelectItem value="REGISTRY">REGISTRY</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />

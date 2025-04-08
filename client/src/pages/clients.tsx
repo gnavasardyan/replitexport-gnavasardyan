@@ -1,8 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Pencil, Plus, Trash2, Eye } from "lucide-react";
+import { Pencil, Plus, Trash2, Eye, X } from "lucide-react";
 import { useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { API } from "@/lib/api";
@@ -26,6 +25,7 @@ export default function Clients() {
   const [openEditClient, setOpenEditClient] = useState(false);
   const [openDeleteClient, setOpenDeleteClient] = useState(false);
   const [selectedClient, setSelectedClient] = useState<ClientResponse | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Fetch clients
   const { data: clients, isLoading, error } = useQuery({
@@ -87,6 +87,11 @@ export default function Clients() {
     return date.toLocaleDateString("ru-RU");
   };
 
+  // Фильтрация клиентов по поисковому запросу
+  const filteredClients = clients?.filter(client => 
+    client.client_name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
@@ -97,72 +102,77 @@ export default function Clients() {
         </Button>
       </div>
 
-      <Tabs defaultValue="all">
-        <TabsList className="mb-4">
-          <TabsTrigger value="all">Все клиенты</TabsTrigger>
-          <TabsTrigger value="active">Активные</TabsTrigger>
-          <TabsTrigger value="inactive">Неактивные</TabsTrigger>
-        </TabsList>
+      {/* Поиск и фильтрация клиентов */}
+      <div className="mb-6">
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Поиск клиентов по названию..."
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <button 
+            className="absolute right-3 top-2 text-gray-500 hover:text-gray-700"
+            onClick={() => setSearchQuery("")}
+          >
+            {searchQuery && <X size={16} />}
+          </button>
+        </div>
+      </div>
 
-        <TabsContent value="all" className="space-y-4">
-          {isLoading ? (
-            <div className="text-center py-8">Загрузка клиентов...</div>
-          ) : error ? (
-            <div className="text-center py-8 text-red-500">Ошибка загрузки данных</div>
-          ) : !clients || clients.length === 0 ? (
-            <div className="text-center py-8">Нет данных о клиентах</div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {clients.map((client: ClientResponse) => (
-                <Card key={client.id} className="overflow-hidden">
-                  <CardHeader className="pb-2">
-                    <div className="flex justify-between items-start">
-                      <CardTitle className="text-xl">{client.client_name}</CardTitle>
-                      <Badge variant="outline" className="bg-green-500 text-white">
-                        {client.type}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pb-2">
-                    <div className="space-y-2 text-sm">
-                      <p><span className="font-medium">ИНН:</span> {client.inn}</p>
-                      <p><span className="font-medium">ID партнера:</span> {client.partner_id}</p>
-                      {client.createdAt && (
-                        <p><span className="font-medium">Создан:</span> {formatDate(client.createdAt)}</p>
-                      )}
-                    </div>
-                  </CardContent>
-                  <Separator />
-                  <CardFooter className="flex justify-between pt-4">
-                    <Button variant="outline" size="sm" className="gap-1" onClick={() => handleViewClient(client)}>
-                      <Eye size={14} />
-                      Просмотр
+      <div className="space-y-4">
+        {isLoading ? (
+          <div className="text-center py-8">Загрузка клиентов...</div>
+        ) : error ? (
+          <div className="text-center py-8 text-red-500">Ошибка загрузки данных</div>
+        ) : !filteredClients || filteredClients.length === 0 ? (
+          <div className="text-center py-8">
+            {searchQuery ? "Нет результатов по вашему запросу" : "Нет данных о клиентах"}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredClients.map((client: ClientResponse) => (
+              <Card key={client.id} className="overflow-hidden">
+                <CardHeader className="pb-2">
+                  <div className="flex justify-between items-start">
+                    <CardTitle className="text-xl">{client.client_name}</CardTitle>
+                    <Badge variant="outline" className="bg-green-500 text-white">
+                      {client.type}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="pb-2">
+                  <div className="space-y-2 text-sm">
+                    <p><span className="font-medium">ИНН:</span> {client.inn}</p>
+                    <p><span className="font-medium">ID партнера:</span> {client.partner_id}</p>
+                    {client.createdAt && (
+                      <p><span className="font-medium">Создан:</span> {formatDate(client.createdAt)}</p>
+                    )}
+                  </div>
+                </CardContent>
+                <Separator />
+                <CardFooter className="flex justify-between pt-4">
+                  <Button variant="outline" size="sm" className="gap-1" onClick={() => handleViewClient(client)}>
+                    <Eye size={14} />
+                    Просмотр
+                  </Button>
+                  <div className="flex gap-2">
+                    <Button variant="ghost" size="sm" className="gap-1 text-blue-600" onClick={() => handleEditClient(client)}>
+                      <Pencil size={14} />
+                      Изменить
                     </Button>
-                    <div className="flex gap-2">
-                      <Button variant="ghost" size="sm" className="gap-1 text-blue-600" onClick={() => handleEditClient(client)}>
-                        <Pencil size={14} />
-                        Изменить
-                      </Button>
-                      <Button variant="ghost" size="sm" className="gap-1 text-red-600" onClick={() => handleDeleteClient(client)}>
-                        <Trash2 size={14} />
-                        Удалить
-                      </Button>
-                    </div>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-          )}
-        </TabsContent>
-
-        <TabsContent value="active">
-          <div className="text-center py-8">Функциональность находится в разработке</div>
-        </TabsContent>
-
-        <TabsContent value="inactive">
-          <div className="text-center py-8">Функциональность находится в разработке</div>
-        </TabsContent>
-      </Tabs>
+                    <Button variant="ghost" size="sm" className="gap-1 text-red-600" onClick={() => handleDeleteClient(client)}>
+                      <Trash2 size={14} />
+                      Удалить
+                    </Button>
+                  </div>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Add Client Dialog */}
       <Dialog open={openAddClient} onOpenChange={setOpenAddClient}>

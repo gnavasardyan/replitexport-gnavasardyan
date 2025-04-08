@@ -4,12 +4,19 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Pencil, Plus, Trash2, Eye } from "lucide-react";
 import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { API } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle,
+  DialogDescription
+} from "@/components/ui/dialog";
 import { LicenseResponse } from "@shared/schema";
+import { LicenseForm } from "@/components/licenses/license-form";
 
 export default function Licenses() {
   const { toast } = useToast();
@@ -42,8 +49,34 @@ export default function Licenses() {
   const handleViewLicense = (license: LicenseResponse) => {
     toast({
       title: "Информация о лицензии",
-      description: `${license.licenseKey} (${license.status || "Статус не указан"})`,
+      description: `${license.license_key} (${license.status || "Статус не указан"})`,
     });
+  };
+  
+  // Удаление лицензии
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => API.licenses.delete(id),
+    onSuccess: () => {
+      toast({
+        title: "Успех",
+        description: "Лицензия успешно удалена",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/v1/licenses"] });
+      setOpenDeleteLicense(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Ошибка",
+        description: `Не удалось удалить лицензию: ${error.message}`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleConfirmDelete = () => {
+    if (selectedLicense) {
+      deleteMutation.mutate(selectedLicense.id);
+    }
   };
 
   // Format date string to readable format
@@ -57,13 +90,13 @@ export default function Licenses() {
   const getLicenseBadge = (status: string | undefined) => {
     if (!status) return { variant: "outline" as const, className: "", label: "Нет статуса" };
     
-    switch (status.toLowerCase()) {
-      case "active":
-        return { variant: "default" as const, className: "bg-green-500", label: "Активна" };
-      case "expired":
-        return { variant: "outline" as const, className: "text-red-500", label: "Истекла" };
-      case "suspended":
-        return { variant: "outline" as const, className: "text-amber-500", label: "Приостановлена" };
+    switch (status) {
+      case "AVAIL":
+        return { variant: "default" as const, className: "bg-green-500", label: "Доступна" };
+      case "USED":
+        return { variant: "outline" as const, className: "bg-blue-500 text-white", label: "Используется" };
+      case "BLOCKED":
+        return { variant: "outline" as const, className: "bg-red-500 text-white", label: "Заблокирована" };
       default:
         return { variant: "outline" as const, className: "", label: status };
     }
@@ -82,8 +115,9 @@ export default function Licenses() {
       <Tabs defaultValue="all">
         <TabsList className="mb-4">
           <TabsTrigger value="all">Все лицензии</TabsTrigger>
-          <TabsTrigger value="active">Активные</TabsTrigger>
-          <TabsTrigger value="expired">Истекшие</TabsTrigger>
+          <TabsTrigger value="avail">Доступные</TabsTrigger>
+          <TabsTrigger value="used">Используемые</TabsTrigger>
+          <TabsTrigger value="blocked">Заблокированные</TabsTrigger>
         </TabsList>
 
         <TabsContent value="all" className="space-y-4">
@@ -102,7 +136,7 @@ export default function Licenses() {
                   <Card key={license.id} className="overflow-hidden">
                     <CardHeader className="pb-2">
                       <div className="flex justify-between items-start">
-                        <CardTitle className="text-xl font-mono">{license.licenseKey}</CardTitle>
+                        <CardTitle className="text-xl font-mono">{license.license_key}</CardTitle>
                         <Badge 
                           variant={badgeInfo.variant}
                           className={badgeInfo.className}
@@ -113,22 +147,8 @@ export default function Licenses() {
                     </CardHeader>
                     <CardContent className="pb-2">
                       <div className="space-y-2 text-sm">
-                        {license.clientId && (
-                          <p><span className="font-medium">ID клиента:</span> {license.clientId}</p>
-                        )}
+                        <p><span className="font-medium">ID клиента:</span> {license.client_id}</p>
                         <p><span className="font-medium">Дата выдачи:</span> {formatDate(license.issuedDate)}</p>
-                        {license.expiryDate && (
-                          <p><span className="font-medium">Дата окончания:</span> {formatDate(license.expiryDate)}</p>
-                        )}
-                        {license.features && (
-                          <p><span className="font-medium">Функции:</span> {license.features}</p>
-                        )}
-                        {license.maxDevices && (
-                          <p><span className="font-medium">Макс. устройств:</span> {license.maxDevices}</p>
-                        )}
-                        {license.notes && (
-                          <p><span className="font-medium">Примечания:</span> {license.notes}</p>
-                        )}
                       </div>
                     </CardContent>
                     <Separator />
@@ -155,36 +175,65 @@ export default function Licenses() {
           )}
         </TabsContent>
 
-        <TabsContent value="active">
-          <div className="text-center py-8">Функциональность находится в разработке</div>
+        <TabsContent value="avail">
+          <div className="text-center py-8">Функциональность фильтрации находится в разработке</div>
         </TabsContent>
 
-        <TabsContent value="expired">
-          <div className="text-center py-8">Функциональность находится в разработке</div>
+        <TabsContent value="used">
+          <div className="text-center py-8">Функциональность фильтрации находится в разработке</div>
+        </TabsContent>
+
+        <TabsContent value="blocked">
+          <div className="text-center py-8">Функциональность фильтрации находится в разработке</div>
         </TabsContent>
       </Tabs>
 
-      {/* Add License Dialog - Placeholder for now */}
+      {/* Add License Dialog */}
       <Dialog open={openAddLicense} onOpenChange={setOpenAddLicense}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Добавить новую лицензию</DialogTitle>
+            <DialogDescription>
+              Заполните информацию для создания новой лицензии
+            </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
-            <p>Форма для добавления новой лицензии - находится в разработке</p>
-          </div>
+          <LicenseForm 
+            onClose={() => setOpenAddLicense(false)}
+            onSuccess={() => {
+              setOpenAddLicense(false);
+              queryClient.invalidateQueries({ queryKey: ["/api/v1/licenses"] });
+              toast({
+                title: "Успех",
+                description: "Лицензия успешно создана",
+              });
+            }}
+          />
         </DialogContent>
       </Dialog>
 
-      {/* Edit License Dialog - Placeholder for now */}
+      {/* Edit License Dialog */}
       <Dialog open={openEditLicense} onOpenChange={setOpenEditLicense}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Изменить данные лицензии</DialogTitle>
+            <DialogDescription>
+              Обновите данные лицензии
+            </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
-            <p>Форма для редактирования лицензии - находится в разработке</p>
-          </div>
+          {selectedLicense && (
+            <LicenseForm 
+              license={selectedLicense}
+              onClose={() => setOpenEditLicense(false)}
+              onSuccess={() => {
+                setOpenEditLicense(false);
+                queryClient.invalidateQueries({ queryKey: ["/api/v1/licenses"] });
+                toast({
+                  title: "Успех",
+                  description: "Лицензия успешно обновлена",
+                });
+              }}
+            />
+          )}
         </DialogContent>
       </Dialog>
 
@@ -196,14 +245,18 @@ export default function Licenses() {
           </DialogHeader>
           <div className="py-4">
             <p>Вы уверены, что хотите удалить эту лицензию?</p>
-            {selectedLicense && <p className="font-bold font-mono">{selectedLicense.licenseKey}</p>}
+            {selectedLicense && <p className="font-bold font-mono">{selectedLicense.license_key}</p>}
           </div>
           <div className="flex justify-end space-x-2">
             <Button variant="outline" onClick={() => setOpenDeleteLicense(false)}>
               Отмена
             </Button>
-            <Button variant="destructive">
-              Удалить
+            <Button 
+              variant="destructive" 
+              onClick={handleConfirmDelete}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? "Удаление..." : "Удалить"}
             </Button>
           </div>
         </DialogContent>

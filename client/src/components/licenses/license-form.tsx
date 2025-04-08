@@ -6,9 +6,9 @@ import { API } from "@/lib/api";
 import { 
   licenseFormSchema, 
   InsertLicense, 
-  LicenseResponse,
-  LicenseStatusOptions, 
-  ClientResponse 
+  LicenseResponse, 
+  ClientResponse,
+  LicenseStatusOptions 
 } from "@shared/schema";
 import { 
   Form, 
@@ -65,7 +65,7 @@ export function LicenseForm({ license, onClose, onSuccess }: LicenseFormProps) {
     : {
         client_id: undefined,
         license_key: "",
-        status: "AVAIL"
+        status: "AVAIL",
       };
 
   const form = useForm({
@@ -159,9 +159,9 @@ export function LicenseForm({ license, onClose, onSuccess }: LicenseFormProps) {
           name="license_key"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Лицензионный ключ*</FormLabel>
+              <FormLabel>Ключ лицензии*</FormLabel>
               <FormControl>
-                <Input placeholder="Введите лицензионный ключ" {...field} />
+                <Input placeholder="Введите ключ лицензии" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -177,13 +177,13 @@ export function LicenseForm({ license, onClose, onSuccess }: LicenseFormProps) {
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Выберите статус" />
+                    <SelectValue placeholder="Выберите статус лицензии" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {LicenseStatusOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
+                  {LicenseStatusOptions.map(status => (
+                    <SelectItem key={status.value} value={status.value}>
+                      {status.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
