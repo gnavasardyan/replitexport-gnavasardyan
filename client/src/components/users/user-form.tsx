@@ -112,11 +112,12 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
     try {
       // Преобразуем данные для API
       const userData: InsertUser = {
-        username: data.username,
-        password: data.password,
-        name: data.name,
         email: data.email,
+        password: data.password,
         role: data.role,
+        status: data.status,
+        partner_id: data.partner_id,
+        client_id: data.client_id,
       };
 
       // Дополнительные поля для API
@@ -162,12 +163,12 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
-          name="username"
+          name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Имя пользователя*</FormLabel>
+              <FormLabel>Email*</FormLabel>
               <FormControl>
-                <Input placeholder="Введите имя пользователя" {...field} />
+                <Input placeholder="Введите email" type="email" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
