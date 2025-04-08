@@ -9,57 +9,60 @@ import {
 } from "@shared/schema";
 
 export const API = {
+  // API base URL
+  baseUrl: "/api/v1",
+  
   // Partners API
   partners: {
     getAll: async (): Promise<PartnerResponse[]> => {
-      const res = await apiRequest("GET", "http://158.160.86.244:50000/api/v1/partners/", undefined);
+      const res = await apiRequest("GET", "/api/v1/partners/", undefined);
       return res.json();
     },
     
     getById: async (partner_id: number): Promise<PartnerResponse> => {
-      const res = await apiRequest("GET", `http://158.160.86.244:50000/api/v1/partners/${partner_id}`, undefined);
+      const res = await apiRequest("GET", `/api/v1/partners/${partner_id}`, undefined);
       return res.json();
     },
     
     create: async (partner: InsertPartner): Promise<PartnerResponse> => {
-      const res = await apiRequest("POST", "http://158.160.86.244:50000/api/v1/partners/", partner);
+      const res = await apiRequest("POST", "/api/v1/partners/", partner);
       return res.json();
     },
     
     update: async (partner_id: number, partner: Partial<PartnerUpdate>): Promise<PartnerResponse> => {
-      const res = await apiRequest("PUT", `http://158.160.86.244:50000/api/v1/partners/${partner_id}`, partner);
+      const res = await apiRequest("PUT", `/api/v1/partners/${partner_id}`, partner);
       return res.json();
     },
     
     delete: async (partner_id: number): Promise<void> => {
-      await apiRequest("DELETE", `http://158.160.86.244:50000/api/v1/partners/${partner_id}`, undefined);
+      await apiRequest("DELETE", `/api/v1/partners/${partner_id}`, undefined);
     }
   },
   
   // Users API
   users: {
     getAll: async (): Promise<UserResponse[]> => {
-      const res = await apiRequest("GET", "http://158.160.86.244:50000/api/v1/users/", undefined);
+      const res = await apiRequest("GET", "/api/v1/users/", undefined);
       return res.json();
     },
     
     getByEmail: async (email: string): Promise<UserResponse> => {
-      const res = await apiRequest("GET", `http://158.160.86.244:50000/api/v1/users/${email}`, undefined);
+      const res = await apiRequest("GET", `/api/v1/users/${email}`, undefined);
       return res.json();
     },
     
     create: async (user: InsertUser): Promise<UserResponse> => {
-      const res = await apiRequest("POST", "http://158.160.86.244:50000/api/v1/users/", user);
+      const res = await apiRequest("POST", "/api/v1/users/", user);
       return res.json();
     },
     
     update: async (email: string, user: Partial<UserUpdate>): Promise<UserResponse> => {
-      const res = await apiRequest("PUT", `http://158.160.86.244:50000/api/v1/users/${email}`, user);
+      const res = await apiRequest("PUT", `/api/v1/users/${email}`, user);
       return res.json();
     },
     
     delete: async (email: string): Promise<void> => {
-      await apiRequest("DELETE", `http://158.160.86.244:50000/api/v1/users/${email}`, undefined);
+      await apiRequest("DELETE", `/api/v1/users/${email}`, undefined);
     }
   },
   

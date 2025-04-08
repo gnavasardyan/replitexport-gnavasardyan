@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { setupApiProxy } from "./proxy";
 
 const app = express();
 app.use(express.json());
@@ -37,6 +38,10 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Настраиваем прокси для внешнего API сначала, чтобы перехватывать запросы к внешнему API
+  setupApiProxy(app);
+  
+  // Затем настраиваем стандартные маршруты приложения
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
