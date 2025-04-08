@@ -1,12 +1,15 @@
 import { Sidebar } from "@/components/layout/sidebar";
 import { PartnerList } from "@/components/partners/partner-list";
-import { useLocation } from 'wouter';
+import { useLocation } from 'wouter'; // Assumed import for wouter routing
+import { useNavigate } from 'react-router-dom'; //Assumed import for navigation
+
 
 const BackButton = () => {
+    const navigate = useNavigate();
     const [, setLocation] = useLocation();
 
     const handleBack = () => {
-      setLocation('/'); // Navigate back to home
+      navigate(-1); // Navigate back one step in history
     };
 
     return (

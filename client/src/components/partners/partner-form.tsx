@@ -34,7 +34,7 @@ export function PartnerForm({ partner, onClose, onSuccess }: PartnerFormProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  
   const defaultValues = partner
     ? { ...partner }
     : {
@@ -94,7 +94,7 @@ export function PartnerForm({ partner, onClose, onSuccess }: PartnerFormProps) {
 
   const onSubmit = (data: InsertPartner) => {
     setIsSubmitting(true);
-
+    
     if (partner) {
       updateMutation.mutate({ 
         partner_id: partner.partner_id, 
