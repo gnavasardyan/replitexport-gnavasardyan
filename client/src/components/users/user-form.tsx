@@ -48,7 +48,7 @@ const userFormSchema = z.object({
   role: z.enum(["admin", "user"], {
     required_error: "Выберите роль пользователя",
   }),
-  last_logon_time: z.date().optional(),
+
   status: z.enum(["ACTIVE", "CREATED", "CONFIRMED"], {
     required_error: "Выберите статус пользователя",
   }),
@@ -106,7 +106,7 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
       email: user?.email || "",
       role: (user?.role as any) || "user",
       status: "ACTIVE", // Дефолтное значение
-      last_logon_time: user?.createdAt ? new Date(user.createdAt) : undefined,
+
       email_confirm_token: "",
       partner_id: undefined,
       client_id: undefined,
@@ -129,7 +129,7 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
       const apiData = {
         ...userData,
         status: data.status,
-        last_logon_time: data.last_logon_time ? format(data.last_logon_time, 'yyyy-MM-dd') : undefined,
+
         email_confirm_token: data.email_confirm_token || undefined,
         partner_id: data.partner_id,
         client_id: data.client_id,
@@ -264,45 +264,6 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
                   <SelectItem value="CONFIRMED">Подтвержден</SelectItem>
                 </SelectContent>
               </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="last_logon_time"
-          render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>Дата последнего входа</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-full pl-3 text-left font-normal",
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      {field.value ? (
-                        format(field.value, "dd.MM.yyyy")
-                      ) : (
-                        <span>Выберите дату</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    onSelect={field.onChange}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
               <FormMessage />
             </FormItem>
           )}
