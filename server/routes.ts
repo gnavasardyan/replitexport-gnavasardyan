@@ -177,9 +177,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // POST /api/v1/users - Create new user
   app.post(`${API_PREFIX}/users/`, async (req: Request, res: Response) => {
+    console.log("req.body", req.body)
     try {
-      const userData = insertUserSchema.parse(req.body);
-      const newUser = await storage.createUser(userData);
+      const userData = insertUserSchema.omit({ email_confirm_token: true, client_id: true, last_logon_time: true}).parse(req.body);
+
+      const newUser = await storage.createUser({ ...userData, email_confirm_token: 'test' });
       
       // Create a UserResponse object without password for the response
       const userResponse: UserResponse = {

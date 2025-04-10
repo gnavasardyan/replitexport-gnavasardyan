@@ -1,3 +1,5 @@
+import { ClientResponse } from "@/../shared/schema";
+import { DeleteLicenseDialog } from "@/components/licenses/delete-license-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -21,6 +23,7 @@ import { LicenseForm } from "@/components/licenses/license-form";
 import { Sidebar } from "@/components/layout/sidebar";
 
 export default function Licenses() {
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [openAddLicense, setOpenAddLicense] = useState(false);
@@ -34,8 +37,14 @@ export default function Licenses() {
     queryFn: API.licenses.getAll,
   });
 
+  //Fetch clients
+  const { data: clients, isLoading: isClientsLoading, error: clientsError} = useQuery({
+    queryKey: ["/api/v1/clients"],
+    queryFn: API.clients.getAll
+  })
+
   const handleAddLicense = () => {
-    setOpenAddLicense(true);
+      setOpenAddLicense(true);
   };
 
   const handleEditLicense = (license: LicenseResponse) => {
@@ -53,32 +62,6 @@ export default function Licenses() {
       title: "Информация о лицензии",
       description: `${license.license_key} (${license.status || "Статус не указан"})`,
     });
-  };
-  
-  // Удаление лицензии
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => API.licenses.delete(id),
-    onSuccess: () => {
-      toast({
-        title: "Успех",
-        description: "Лицензия успешно удалена",
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/v1/licenses"] });
-      setOpenDeleteLicense(false);
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Ошибка",
-        description: `Не удалось удалить лицензию: ${error.message}`,
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleConfirmDelete = () => {
-    if (selectedLicense) {
-      deleteMutation.mutate(selectedLicense.id);
-    }
   };
 
   // Format date string to readable format
@@ -152,6 +135,7 @@ export default function Licenses() {
                     </CardHeader>
                     <CardContent className="pb-2">
                       <div className="space-y-2 text-sm">
+                        <p><span className="font-medium">ID лицензии:</span> {license.license_id}</p>
                         <p><span className="font-medium">ID клиента:</span> {license.client_id}</p>
                         <p><span className="font-medium">Дата выдачи:</span> {formatDate(license.issuedDate)}</p>
                       </div>
@@ -203,6 +187,7 @@ export default function Licenses() {
             </DialogDescription>
           </DialogHeader>
           <LicenseForm 
+            clients={clients || []}
             onClose={() => setOpenAddLicense(false)}
             onSuccess={() => {
               setOpenAddLicense(false);
@@ -227,7 +212,8 @@ export default function Licenses() {
           </DialogHeader>
           {selectedLicense && (
             <LicenseForm 
-              license={selectedLicense}
+            clients={clients}
+            license={{...selectedLicense, client_id: selectedLicense.client_id}}
               onClose={() => setOpenEditLicense(false)}
               onSuccess={() => {
                 setOpenEditLicense(false);
@@ -242,30 +228,16 @@ export default function Licenses() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete License Dialog - Placeholder for now */}
-      <Dialog open={openDeleteLicense} onOpenChange={setOpenDeleteLicense}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Удалить лицензию</DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <p>Вы уверены, что хотите удалить эту лицензию?</p>
-            {selectedLicense && <p className="font-bold font-mono">{selectedLicense.license_key}</p>}
-          </div>
-          <div className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={() => setOpenDeleteLicense(false)}>
-              Отмена
-            </Button>
-            <Button 
-              variant="destructive" 
-              onClick={handleConfirmDelete}
-              disabled={deleteMutation.isPending}
-            >
-              {deleteMutation.isPending ? "Удаление..." : "Удалить"}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Delete License Dialog */}
+        <DeleteLicenseDialog
+          open={openDeleteLicense}
+          onOpenChange={setOpenDeleteLicense}
+          license={selectedLicense}
+          onClose={() => {
+            setOpenDeleteLicense(false);
+            setSelectedLicense(null);
+          }}
+        />
         </div>
       </main>
     </div>

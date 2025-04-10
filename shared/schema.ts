@@ -13,23 +13,28 @@ export const users = pgTable("users", {
   role: text("role").default("USER"),
   email_confirm_token: text("email_confirm_token").notNull(),
   partner_id: integer("partner_id").notNull(),
-  client_id: integer("client_id").notNull(),
   last_logon_time: timestamp("last_logon_time"),
 });
 
-export const insertUserSchema = createInsertSchema(users);
+export const insertUserSchema = createInsertSchema(users).pick({
+	email: true,
+	password: true,
+	status: true,
+	role: true,
+	partner_id: true
+})
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 
 export const userResponseSchema = z.object({
-  email: z.string().email(),
-  status: z.enum(UserStatus),
-  role: z.enum(UserRole),
-  email_confirm_token: z.string(),
-  partner_id: z.number(),
-  client_id: z.number(),
-  last_logon_time: z.date().optional(),
+	id: z.number(),
+	email: z.string().email(),
+	status: z.enum(UserStatus),
+	role: z.enum(UserRole),
+	partner_id: z.number(),
+	last_logon_time: z.date().optional(),
+	email_confirm_token: z.string(),
 });
 
 export const userUpdateSchema = z.object({
@@ -38,8 +43,7 @@ export const userUpdateSchema = z.object({
   status: z.enum(UserStatus).optional(),
   role: z.enum(UserRole).optional(),
   email_confirm_token: z.string().optional(),
-  partner_id: z.number().optional(),
-  client_id: z.number().optional(),
+  partner_id: z.number().optional(),  
   last_logon_time: z.date().optional(),
 });
 

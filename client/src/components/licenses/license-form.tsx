@@ -4,14 +4,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { API } from "@/lib/api";
 import { 
-  licenseFormSchema, 
-  InsertLicense, 
-  LicenseResponse, 
-  ClientResponse,
-  LicenseStatusOptions 
+  licenseFormSchema,
+  InsertLicense,
+  LicenseResponse,
+  LicenseStatusOptions,
 } from "@shared/schema";
+import { ClientResponse } from "@shared/schema";
 import { 
-  Form, 
+    Form,
   FormControl, 
   FormField, 
   FormItem, 
@@ -32,40 +32,28 @@ import { useToast } from "@/hooks/use-toast";
 interface LicenseFormProps {
   license?: LicenseResponse;
   onClose: () => void;
+  clients: ClientResponse[];
   onSuccess: () => void;
 }
 
-export function LicenseForm({ license, onClose, onSuccess }: LicenseFormProps) {
+export function LicenseForm({ license, clients, onClose, onSuccess }: LicenseFormProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [clients, setClients] = useState<{ id: number; client_name: string }[]>([]);
-  
-  useEffect(() => {
-    // Загружаем список клиентов для селекта
-    const fetchClients = async () => {
-      try {
-        const response = await API.clients.getAll();
-        setClients(response.map(c => ({ id: c.client_id, client_name: c.client_name })));
-      } catch (error) {
-        console.error("Ошибка при загрузке клиентов:", error);
-        toast({
-          title: "Ошибка",
-          description: "Не удалось загрузить список клиентов",
-          variant: "destructive",
-        });
-      }
-    };
-    
-    fetchClients();
-  }, [toast]);
-  
+  const [selectedClientId, setSelectedClientId] = useState<number | undefined>(license?.client_id);
+  const handleClientChange = (clientId: number) => setSelectedClientId(clientId);
+
+
+  const clientOptions = clients.map((client) => ({
+    label: client.client_name,
+    value: client.client_id,
+  }));
+
   const defaultValues = license
     ? { ...license }
-    : {
-        client_id: undefined,
-        license_key: "",
-        status: "AVAIL",
+    : {      
+      license_key: "",
+      status: "AVAIL",
       };
 
   const form = useForm({
@@ -86,7 +74,7 @@ export function LicenseForm({ license, onClose, onSuccess }: LicenseFormProps) {
     onError: (error: any) => {
       toast({
         title: "Ошибка",
-        description: `Не удалось создать лицензию: ${error.message}`,
+        description: `Не удалось создать лицензию`,
         variant: "destructive",
       });
       setIsSubmitting(false);
@@ -94,8 +82,8 @@ export function LicenseForm({ license, onClose, onSuccess }: LicenseFormProps) {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<LicenseResponse> }) => API.licenses.update(id, data),
-    onSuccess: () => {
+    mutationFn: ({ license_id, data }: { license_id: number; data: Partial<LicenseResponse> }) => API.licenses.update(license_id, data),
+        onSuccess: () => {
       toast({
         title: "Успех",
         description: "Лицензия успешно обновлена",
@@ -106,7 +94,7 @@ export function LicenseForm({ license, onClose, onSuccess }: LicenseFormProps) {
     onError: (error: any) => {
       toast({
         title: "Ошибка",
-        description: `Не удалось обновить лицензию: ${error.message}`,
+        description: `Не удалось обновить лицензию`,
         variant: "destructive",
       });
       setIsSubmitting(false);
@@ -115,44 +103,86 @@ export function LicenseForm({ license, onClose, onSuccess }: LicenseFormProps) {
 
   const onSubmit = (data: InsertLicense) => {
     setIsSubmitting(true);
-    
-    if (license) {
-      updateMutation.mutate({ id: license.id, data });
+
+    if (license?.license_id ) {
+      if (selectedClientId) {
+        updateMutation.mutate({ license_id: license.license_id, data: {license_key: data.license_key, status: data.status, client_id: selectedClientId} });
+      }
     } else {
-      createMutation.mutate(data);
+      if (selectedClientId) {
+        createMutation.mutate({...data, client_id: selectedClientId });
+      }
     }
   };
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="client_id"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Клиент*</FormLabel>
-              <Select 
-                onValueChange={(value) => field.onChange(parseInt(value))}
-                value={field.value?.toString()}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Выберите клиента" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {clients.map((client) => (
-                    <SelectItem key={client.id} value={client.id.toString()}>
-                      {client.client_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {license?.license_id && (
+          <FormField
+            control={form.control}
+            name="client_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Клиент:</FormLabel>
+                <Select onValueChange={(value) => {
+                  handleClientChange(Number(value))
+                  field.onChange(Number(value))
+                }} 
+                defaultValue={String(selectedClientId)}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите клиента" />
+                    </SelectTrigger>
+                  </FormControl>                  
+                  <SelectContent>
+                  {clientOptions.map((item: { label: string; value: number }) => (
+                      <SelectItem key={item.value} value={String(item.value)}>
+                        {item.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                  <FormMessage />
+                </Select>
+
+              </FormItem>
+              
+
+            )}
+          />
+        )}
+
+        {!license && clientOptions && (
+          <FormField
+            control={form.control}
+            name="client_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Клиент:</FormLabel>
+                <Select onValueChange={(value) => {
+                  handleClientChange(Number(value))
+                  field.onChange(Number(value))
+                }}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите клиента" />
+                    </SelectTrigger>
+                   </FormControl>
+                   <SelectContent>
+                  {clientOptions.map((item: { label: string; value: number }) => (
+                      <SelectItem key={item.value} value={String(item.value)}>
+                        {item.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                <FormMessage />
+                </Select>
+              </FormItem>
+            )}
+          />
+        )}
 
         <FormField
           control={form.control}

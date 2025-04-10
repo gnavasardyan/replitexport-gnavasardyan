@@ -34,22 +34,22 @@ export function DeletePartnerDialog({
     mutationFn: (id: number) => API.partners.delete(id),
     onSuccess: () => {
       toast({
-        title: "Partner deleted",
-        description: "The partner has been successfully deleted.",
+        title: "Партнер удален",
+        description: "Партнер был успешно удален.",
       });
       onDelete();
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: `Failed to delete partner: ${error.message}`,
+        title: "Ошибка",
+        description: `Не удалось удалить партнера: ${error.message}`,
         variant: "destructive",
       });
     },
   });
 
   const handleDelete = () => {
-    if (partner) {
+      if (partner) {
       deleteMutation.mutate(partner.partner_id);
     }
   };
@@ -57,20 +57,20 @@ export function DeletePartnerDialog({
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Delete Partner</AlertDialogTitle>
+          <AlertDialogHeader>
+              <AlertDialogTitle>Удалить партнера</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete <strong>{partner?.name}</strong>? All of their data will be permanently removed from our servers. This action cannot be undone.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
+              Вы уверены, что хотите удалить <strong>{partner?.name}</strong>? Все их данные будут безвозвратно удалены с наших серверов. Это действие нельзя отменить.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={onClose}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel onClick={onClose}>Отмена</AlertDialogCancel>
           <AlertDialogAction 
             className="bg-red-600 hover:bg-red-700 focus:ring-red-600" 
             onClick={handleDelete}
             disabled={deleteMutation.isPending}
           >
-            {deleteMutation.isPending ? "Deleting..." : "Delete"}
+            {deleteMutation.isPending ? "Удаление..." : "Удалить"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

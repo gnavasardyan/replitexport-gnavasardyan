@@ -60,8 +60,12 @@ export function ClientForm({ client, onClose, onSuccess }: ClientFormProps) {
   }, [toast]);
   
   const defaultValues = client
-    ? { ...client }
-    : {
+    ? {
+        client_name: client.client_name,
+        inn: client.inn,
+        type: client.type,
+        partner_id: client.partner_id,
+      } : {
         partner_id: undefined,
         client_name: "",
         inn: "",
@@ -212,7 +216,7 @@ export function ClientForm({ client, onClose, onSuccess }: ClientFormProps) {
             onClick={onClose}
             disabled={isSubmitting}
           >
-            Отмена
+            Отменить
           </Button>
           <Button
             type="submit"
@@ -220,7 +224,7 @@ export function ClientForm({ client, onClose, onSuccess }: ClientFormProps) {
           >
             {isSubmitting ? "Сохранение..." : client ? "Обновить клиента" : "Добавить клиента"}
           </Button>
-        </div>
+      </div>
       </form>
     </Form>
   );

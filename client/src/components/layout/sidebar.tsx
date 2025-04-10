@@ -71,7 +71,7 @@ export function Sidebar() {
                 fill="white"
               />
             </svg>
-            <span className="ml-2 text-lg font-semibold">Partner Hub</span>
+            <span className="ml-2 text-lg font-semibold">Центр Партнеров</span>
           </div>
           <button className="md:hidden text-gray-500 focus:outline-none" id="toggleSidebar">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -84,25 +84,24 @@ export function Sidebar() {
         <nav className="py-4 flex-grow">
           <ul className="space-y-4">
             {/* Partners Group */}
-            <li>
-              <div className="px-4 mb-1 text-xs font-semibold text-gray-500 uppercase">
-                Партнеры
-              </div>
-              <ul className="mt-1 space-y-1">
-                <SidebarItem
-                  icon={<Users className="w-5 h-5 mr-3" />}
-                  label="Партнеры"
-                  href="/partners"
-                  active={isActive("/partners")}
-                />
-                <SidebarItem
-                  icon={<Building2 className="w-5 h-5 mr-3" />}
-                  label="Клиенты"
-                  href="/clients"
-                  active={isActive("/clients")}
-                />
-              </ul>
-            </li>
+            <li><div className="px-4 mb-1 text-xs font-semibold text-gray-500 uppercase">
+              Партнеры
+            </div>
+            <ul className="mt-1 space-y-1">
+              <SidebarItem
+                icon={<Users className="w-5 h-5 mr-3" />}
+                label="Партнеры"
+                href="/partners"
+                active={isActive("/partners")}
+              />
+              <SidebarItem
+                icon={<Building2 className="w-5 h-5 mr-3" />}
+                label="Клиенты"
+                href="/clients"
+                active={isActive("/clients")}
+              />
+            </ul>
+          </li>
 
             {/* Clients Group */}
             <li>
@@ -116,12 +115,12 @@ export function Sidebar() {
                   href="/licenses"
                   active={isActive("/licenses")}
                 />
-                <SidebarItem
-                  icon={<Cpu className="w-5 h-5 mr-3" />}
-                  label="Устройства"
-                  href="/devices"
-                  active={isActive("/devices")}
-                />
+              <SidebarItem
+                icon={<Cpu className="w-5 h-5 mr-3" />}
+                label="Устройства"
+                href="/devices"
+                active={isActive("/devices")}
+              />
               </ul>
             </li>
 
@@ -130,14 +129,14 @@ export function Sidebar() {
               <div className="px-4 mb-1 text-xs font-semibold text-gray-500 uppercase">
                 Обновления
               </div>
-              <ul className="mt-1 space-y-1">
-                <SidebarItem
-                  icon={<FileUp className="w-5 h-5 mr-3" />}
-                  label="Обновления"
-                  href="/updates"
-                  active={isActive("/updates")}
-                />
-              </ul>
+            <ul className="mt-1 space-y-1">
+              <SidebarItem
+                icon={<FileUp className="w-5 h-5 mr-3" />}
+                label="Обновления"
+                href="/updates"
+                active={isActive("/updates")}
+              />
+            </ul>
             </li>
 
             {/* Admin Group */}
@@ -146,13 +145,13 @@ export function Sidebar() {
                 Администрирование
               </div>
               <ul className="mt-1 space-y-1">
-                <SidebarItem
-                  icon={<UserCircle className="w-5 h-5 mr-3" />}
-                  label="Пользователи"
-                  href="/users"
-                  active={isActive("/users")}
-                />
-              </ul>
+              <SidebarItem
+                icon={<UserCircle className="w-5 h-5 mr-3" />}
+                label="Пользователи"
+                href="/users"
+                active={isActive("/users")}
+              />
+            </ul>
             </li>
           </ul>
         </nav>
@@ -164,7 +163,7 @@ export function Sidebar() {
               A
             </div>
             <div className="ml-3">
-              <p className="text-sm font-medium">Admin User</p>
+              <p className="text-sm font-medium">Администратор</p>
               <p className="text-xs text-gray-500">admin@company.com</p>
             </div>
           </div>

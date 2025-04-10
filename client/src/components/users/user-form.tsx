@@ -39,18 +39,16 @@ const userFormSchema = z.object({
   password: z.string().min(6, {
     message: "Пароль должен содержать не менее 6 символов",
   }),
-  last_logon_time: z.date().optional(),
   status: z.enum(["ACTIVE", "CREATED", "CONFIRMED"], {
     required_error: "Выберите статус пользователя",
   }),
-  partner_id: z.number({
-    required_error: "Выберите партнера",
-  }),
+  partner_id: z
+  .number({ required_error: "Выберите партнера", invalid_type_error: "Выберите партнера" })
+  .min(1, { message: "Выберите партнера" }),
+
+
   role: z.enum(["admin", "user"], {
     required_error: "Выберите роль пользователя",
-  }),
-  client_id: z.number({
-    required_error: "Выберите клиента",
   }),
 });
 
@@ -99,26 +97,16 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
     defaultValues: {
       email: user?.email || "",
       password: "", // Не показываем пароль даже при редактировании
-      last_logon_time: user?.last_logon_time ? new Date(user.last_logon_time) : undefined,
       status: user?.status || "CREATED",
       partner_id: user?.partner_id,
       role: user?.role || "user",
-      client_id: user?.client_id,
+
     },
   });
 
   const onSubmit = async (data: UserFormValues) => {
     setIsSubmitting(true);
     try {
-      // Преобразуем данные для API
-      if (!data.partner_id) {
-        toast({
-          title: "Ошибка",
-          description: "Выберите партнера",
-          variant: "destructive",
-        });
-        return;
-      }
 
       const userData: InsertUser = {
         email: data.email,
@@ -126,15 +114,15 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
         role: data.role || "user",
         status: data.status || "CREATED",
         partner_id: Number(data.partner_id),
-        client_id: Number(data.client_id),
-      };
 
-      const apiData = userData;
+      };      
+
+
 
       let response;
       if (user) {
         // Обновление существующего пользователя
-        response = await apiRequest("PUT", `/api/v1/users/${user.user_id}`, apiData);
+        response = await apiRequest("PUT", `/api/v1/users/${user.user_id}`, userData);
       } else {
         // Создание нового пользователя
         response = await API.users.create(userData);
@@ -142,7 +130,7 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
 
       // Инвалидируем кеш запросов пользователей
       queryClient.invalidateQueries({ queryKey: ["/api/v1/users"] });
-
+      
       toast({
         title: user ? "Пользователь обновлен" : "Пользователь создан",
         description: `Пользователь успешно ${user ? "обновлен" : "создан"}.`,
@@ -192,21 +180,6 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
           )}
         />
 
-
-
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email*</FormLabel>
-              <FormControl>
-                <Input placeholder="Введите email" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
 
         <FormField
           control={form.control}
@@ -262,10 +235,11 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
                 <FormLabel>Партнер</FormLabel>
                 <Select 
                   onValueChange={(value) => {
-                    field.onChange(value === "0" ? undefined : parseInt(value));
+                    field.onChange(value === "0" ? 0 : parseInt(value))
                   }}
                   value={field.value?.toString() || "0"}
                 >
+
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Выберите партнера" />
@@ -282,36 +256,8 @@ export function UserForm({ user, onClose, onSuccess }: UserFormProps) {
                 </Select>
                 <FormMessage />
               </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="client_id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Клиент</FormLabel>
-                <Select 
-                  onValueChange={(value) => field.onChange(value === "0" ? undefined : parseInt(value))} 
-                  value={field.value?.toString() || "0"}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Выберите клиента" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="0">Не выбрано</SelectItem>
-                    {clients.map((client) => (
-                      <SelectItem key={client.client_id} value={client.client_id.toString()}>
-                        {client.client_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
+              
+            )} 
           />
         </div>
 

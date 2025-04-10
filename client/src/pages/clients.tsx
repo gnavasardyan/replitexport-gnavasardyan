@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Pencil, Plus, Trash2, Eye, X } from "lucide-react";
+import { Eye, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { API } from "@/lib/api";
@@ -15,7 +15,7 @@ import {
   DialogDescription,
   DialogFooter 
 } from "@/components/ui/dialog";
-import { ClientResponse } from "@shared/schema";
+import { ClientResponse, PartnerResponse } from "@shared/schema";
 import { ClientForm } from "@/components/clients/client-form";
 
 import { Sidebar } from "@/components/layout/sidebar";
@@ -35,6 +35,23 @@ export default function Clients() {
     queryFn: API.clients.getAll,
   });
 
+  // Fetch partners
+  const { data: partners } = useQuery({
+    queryKey: ["/api/v1/partners/"],
+    queryFn: API.partners.getAll,
+  });
+
+  // Find partner by ID
+  const findPartnerById = (partnerId: number | undefined) => {
+    if (!partnerId || !partners) {
+      return undefined
+    }
+    return partners.find(
+        (partner: PartnerResponse) =>
+            partner.partner_id === partnerId
+    )
+  };
+
   const handleAddClient = () => {
     setOpenAddClient(true);
   };
@@ -51,7 +68,7 @@ export default function Clients() {
 
   const handleViewClient = (client: ClientResponse) => {
     toast({
-      title: "Информация о клиенте",
+      title: "Информация о клиенте", 
       description: `${client.client_name} (ИНН: ${client.inn})`,
     });
   };
@@ -150,7 +167,15 @@ export default function Clients() {
                 <CardContent className="pb-2">
                   <div className="space-y-2 text-sm">
                     <p><span className="font-medium">ИНН:</span> {client.inn}</p>
-                    <p><span className="font-medium">ID партнера:</span> {client.partner_id}</p>
+                    <p>
+                      <span className="font-medium">Имя партнера:</span>{" "}
+                      {findPartnerById(client.partner_id) ? (
+                        findPartnerById(client.partner_id)?.partner_name
+                      ) : (
+                        "Не найден"
+                      )}
+                    </p>
+
                     {client.createdAt && (
                       <p><span className="font-medium">Создан:</span> {formatDate(client.createdAt)}</p>
                     )}
@@ -195,7 +220,7 @@ export default function Clients() {
               queryClient.invalidateQueries({ queryKey: ['/api/v1/clients'] });
               toast({
                 title: "Успех",
-                description: "Клиент успешно добавлен",
+                description: "Клиент успешно добавлен", 
               });
             }}
           />
@@ -220,7 +245,7 @@ export default function Clients() {
                 queryClient.invalidateQueries({ queryKey: ['/api/v1/clients'] });
                 toast({
                   title: "Успех",
-                  description: "Данные клиента успешно обновлены",
+                  description: "Данные клиента успешно обновлены", 
                 });
               }}
             />
