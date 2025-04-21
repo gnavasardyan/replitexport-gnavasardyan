@@ -1,294 +1,212 @@
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Pencil, Plus, Trash2, Eye } from "lucide-react";
-import { useState } from "react";
-import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { API } from "@/lib/api";
-import { Badge } from "@/components/ui/badge";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle,
-  DialogDescription
-} from "@/components/ui/dialog";
 import { LicenseResponse, ClientResponse } from "@shared/schema";
-import { LicenseForm } from "@/components/licenses/license-form";
+import { API } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
 
-import { Sidebar } from "@/components/layout/sidebar";
+// Схема валидации формы
+const licenseFormSchema = z.object({
+  license_key: z.string().min(1, "Обязательное поле"),
+  client_id: z.string().min(1, "Выберите клиента"),
+  status: z.enum(["AVAIL", "USED", "BLOCKED"]),
+  issuedDate: z.string().optional(),
+});
 
-export default function Licenses() {
+type LicenseFormValues = z.infer<typeof licenseFormSchema>;
+
+interface LicenseFormProps {
+  license?: LicenseResponse;
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+export function LicenseForm({ license, onClose, onSuccess }: LicenseFormProps) {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const [openAddLicense, setOpenAddLicense] = useState(false);
-  const [openEditLicense, setOpenEditLicense] = useState(false);
-  const [openDeleteLicense, setOpenDeleteLicense] = useState(false);
-  const [selectedLicense, setSelectedLicense] = useState<LicenseResponse | null>(null);
 
-  // Fetch licenses and clients
-  const { data: licenses, isLoading: isLoadingLicenses, error: licensesError } = useQuery({
-    queryKey: ["/api/v1/licenses"],
-    queryFn: API.licenses.getAll,
-  });
-
-  const { data: clients, isLoading: isLoadingClients, error: clientsError } = useQuery({
+  // Получаем список клиентов
+  const { data: clients, isLoading: isLoadingClients } = useQuery({
     queryKey: ["/api/v1/clients"],
     queryFn: API.clients.getAll,
   });
 
-  const getClientName = (clientId: number) => {
-    if (!clients) return clientId.toString();
-    const client = clients.find((c: ClientResponse) => c.client_id === clientId);
-    return client ? client.client_name : clientId.toString();
-  };
+  // Подготавливаем опции для выпадающего списка клиентов
+  const clientOptions = clients?.map((client: ClientResponse) => ({
+    label: client.client_name,
+    value: client.client_id.toString(),
+  })) || [];
 
-  const handleAddLicense = () => {
-    setOpenAddLicense(true);
-  };
-
-  const handleEditLicense = (license: LicenseResponse) => {
-    setSelectedLicense(license);
-    setOpenEditLicense(true);
-  };
-
-  const handleDeleteLicense = (license: LicenseResponse) => {
-    setSelectedLicense(license);
-    setOpenDeleteLicense(true);
-  };
-
-  const handleViewLicense = (license: LicenseResponse) => {
-    const clientName = getClientName(license.client_id);
-    toast({
-      title: "Информация о лицензии",
-      description: `Ключ: ${license.license_key}, Клиент: ${clientName}, Статус: ${license.status || "Не указан"}`,
-    });
-  };
-  
-  // Удаление лицензии
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => API.licenses.delete(id),
-    onSuccess: () => {
-      toast({
-        title: "Успех",
-        description: "Лицензия успешно удалена",
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/v1/licenses"] });
-      setOpenDeleteLicense(false);
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Ошибка",
-        description: `Не удалось удалить лицензию: ${error.message}`,
-        variant: "destructive",
-      });
+  // Инициализация формы
+  const form = useForm<LicenseFormValues>({
+    resolver: zodResolver(licenseFormSchema),
+    defaultValues: {
+      license_key: license?.license_key || "",
+      client_id: license?.client_id?.toString() || "",
+      status: license?.status || "AVAIL",
+      issuedDate: license?.issuedDate?.toString() || "",
     },
   });
 
-  const handleConfirmDelete = () => {
-    if (selectedLicense) {
-      deleteMutation.mutate(selectedLicense.id);
+  // Обработчик отправки формы
+  const onSubmit = async (values: LicenseFormValues) => {
+    try {
+      if (license) {
+        // Редактирование существующей лицензии
+        await API.licenses.update(license.id, {
+          ...values,
+          client_id: parseInt(values.client_id),
+        });
+        toast({
+          title: "Успех",
+          description: "Лицензия успешно обновлена",
+        });
+      } else {
+        // Создание новой лицензии
+        await API.licenses.create({
+          ...values,
+          client_id: parseInt(values.client_id),
+        });
+        toast({
+          title: "Успех",
+          description: "Лицензия успешно создана",
+        });
+      }
+      onSuccess();
+    } catch (error: any) {
+      toast({
+        title: "Ошибка",
+        description: error.message || "Произошла ошибка",
+        variant: "destructive",
+      });
     }
   };
-
-  // Format date string to readable format
-  const formatDate = (dateString: string | Date | undefined) => {
-    if (!dateString) return "Не указано";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("ru-RU");
-  };
-
-  // Get status badge styling based on license status
-  const getLicenseBadge = (status: string | undefined) => {
-    if (!status) return { variant: "outline" as const, className: "", label: "Нет статуса" };
-    
-    switch (status) {
-      case "AVAIL":
-        return { variant: "default" as const, className: "bg-green-500", label: "Доступна" };
-      case "USED":
-        return { variant: "outline" as const, className: "bg-blue-500 text-white", label: "Используется" };
-      case "BLOCKED":
-        return { variant: "outline" as const, className: "bg-red-500 text-white", label: "Заблокирована" };
-      default:
-        return { variant: "outline" as const, className: "", label: status };
-    }
-  };
-
-  const isLoading = isLoadingLicenses || isLoadingClients;
-  const error = licensesError || clientsError;
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row">
-      <Sidebar />
-      <main className="flex-1 overflow-x-hidden bg-gray-50">
-        <div className="container mx-auto p-4">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold">Лицензии</h1>
-            <Button onClick={handleAddLicense} className="gap-2">
-              <Plus size={16} />
-              Добавить лицензию
-            </Button>
-          </div>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        {/* Поле для ключа лицензии */}
+        <FormField
+          control={form.control}
+          name="license_key"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Ключ лицензии</FormLabel>
+              <FormControl>
+                <Input {...field} placeholder="Введите ключ лицензии" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-          <Tabs defaultValue="all">
-            <TabsList className="mb-4">
-              <TabsTrigger value="all">Все лицензии</TabsTrigger>
-              <TabsTrigger value="avail">Доступные</TabsTrigger>
-              <TabsTrigger value="used">Используемые</TabsTrigger>
-              <TabsTrigger value="blocked">Заблокированные</TabsTrigger>
-            </TabsList>
+        {/* Выбор клиента */}
+        <FormField
+          control={form.control}
+          name="client_id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Клиент</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Выберите клиента" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {isLoadingClients ? (
+                    <SelectItem value="" disabled>
+                      Загрузка клиентов...
+                    </SelectItem>
+                  ) : clientOptions.length === 0 ? (
+                    <SelectItem value="" disabled>
+                      Нет доступных клиентов
+                    </SelectItem>
+                  ) : (
+                    clientOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-            <TabsContent value="all" className="space-y-4">
-              {isLoading ? (
-                <div className="text-center py-8">Загрузка данных...</div>
-              ) : error ? (
-                <div className="text-center py-8 text-red-500">Ошибка загрузки данных</div>
-              ) : !licenses || licenses.length === 0 ? (
-                <div className="text-center py-8">Нет данных о лицензиях</div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {licenses.map((license: LicenseResponse) => {
-                    const badgeInfo = getLicenseBadge(license.status);
-                    const clientName = getClientName(license.client_id);
-                    
-                    return (
-                      <Card key={license.id} className="overflow-hidden">
-                        <CardHeader className="pb-2">
-                          <div className="flex justify-between items-start">
-                            <CardTitle className="text-xl font-mono">{license.license_key}</CardTitle>
-                            <Badge 
-                              variant={badgeInfo.variant}
-                              className={badgeInfo.className}
-                            >
-                              {badgeInfo.label}
-                            </Badge>
-                          </div>
-                        </CardHeader>
-                        <CardContent className="pb-2">
-                          <div className="space-y-2 text-sm">
-                            <p><span className="font-medium">Клиент:</span> {clientName}</p>
-                            <p><span className="font-medium">Дата выдачи:</span> {formatDate(license.issuedDate)}</p>
-                          </div>
-                        </CardContent>
-                        <Separator />
-                        <CardFooter className="flex justify-between pt-4">
-                          <Button variant="outline" size="sm" className="gap-1" onClick={() => handleViewLicense(license)}>
-                            <Eye size={14} />
-                            Просмотр
-                          </Button>
-                          <div className="flex gap-2">
-                            <Button variant="ghost" size="sm" className="gap-1 text-blue-600" onClick={() => handleEditLicense(license)}>
-                              <Pencil size={14} />
-                              Изменить
-                            </Button>
-                            <Button variant="ghost" size="sm" className="gap-1 text-red-600" onClick={() => handleDeleteLicense(license)}>
-                              <Trash2 size={14} />
-                              Удалить
-                            </Button>
-                          </div>
-                        </CardFooter>
-                      </Card>
-                    );
-                  })}
-                </div>
-              )}
-            </TabsContent>
+        {/* Статус лицензии */}
+        <FormField
+          control={form.control}
+          name="status"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Статус</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Выберите статус" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="AVAIL">Доступна</SelectItem>
+                  <SelectItem value="USED">Используется</SelectItem>
+                  <SelectItem value="BLOCKED">Заблокирована</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-            <TabsContent value="avail">
-              <div className="text-center py-8">Функциональность фильтрации находится в разработке</div>
-            </TabsContent>
-
-            <TabsContent value="used">
-              <div className="text-center py-8">Функциональность фильтрации находится в разработке</div>
-            </TabsContent>
-
-            <TabsContent value="blocked">
-              <div className="text-center py-8">Функциональность фильтрации находится в разработке</div>
-            </TabsContent>
-          </Tabs>
-
-          {/* Add License Dialog */}
-          <Dialog open={openAddLicense} onOpenChange={setOpenAddLicense}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Добавить новую лицензию</DialogTitle>
-                <DialogDescription>
-                  Заполните информацию для создания новой лицензии
-                </DialogDescription>
-              </DialogHeader>
-              <LicenseForm 
-                onClose={() => setOpenAddLicense(false)}
-                onSuccess={() => {
-                  setOpenAddLicense(false);
-                  queryClient.invalidateQueries({ queryKey: ["/api/v1/licenses"] });
-                  toast({
-                    title: "Успех",
-                    description: "Лицензия успешно создана",
-                  });
-                }}
-              />
-            </DialogContent>
-          </Dialog>
-
-          {/* Edit License Dialog */}
-          <Dialog open={openEditLicense} onOpenChange={setOpenEditLicense}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Изменить данные лицензии</DialogTitle>
-                <DialogDescription>
-                  Обновите данные лицензии
-                </DialogDescription>
-              </DialogHeader>
-              {selectedLicense && (
-                <LicenseForm 
-                  license={selectedLicense}
-                  onClose={() => setOpenEditLicense(false)}
-                  onSuccess={() => {
-                    setOpenEditLicense(false);
-                    queryClient.invalidateQueries({ queryKey: ["/api/v1/licenses"] });
-                    toast({
-                      title: "Успех",
-                      description: "Лицензия успешно обновлена",
-                    });
-                  }}
+        {/* Дата выдачи (опционально) */}
+        <FormField
+          control={form.control}
+          name="issuedDate"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Дата выдачи</FormLabel>
+              <FormControl>
+                <Input
+                  type="date"
+                  {...field}
+                  value={field.value || ""}
+                  onChange={(e) => field.onChange(e.target.value)}
                 />
-              )}
-            </DialogContent>
-          </Dialog>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-          {/* Delete License Dialog */}
-          <Dialog open={openDeleteLicense} onOpenChange={setOpenDeleteLicense}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Удалить лицензию</DialogTitle>
-              </DialogHeader>
-              <div className="py-4">
-                <p>Вы уверены, что хотите удалить эту лицензию?</p>
-                {selectedLicense && (
-                  <>
-                    <p className="font-bold font-mono">{selectedLicense.license_key}</p>
-                    <p><span className="font-medium">Клиент:</span> {getClientName(selectedLicense.client_id)}</p>
-                  </>
-                )}
-              </div>
-              <div className="flex justify-end space-x-2">
-                <Button variant="outline" onClick={() => setOpenDeleteLicense(false)}>
-                  Отмена
-                </Button>
-                <Button 
-                  variant="destructive" 
-                  onClick={handleConfirmDelete}
-                  disabled={deleteMutation.isPending}
-                >
-                  {deleteMutation.isPending ? "Удаление..." : "Удалить"}
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+        {/* Кнопки формы */}
+        <div className="flex justify-end space-x-2 pt-4">
+          <Button variant="outline" type="button" onClick={onClose}>
+            Отмена
+          </Button>
+          <Button type="submit">
+            {license ? "Сохранить изменения" : "Создать лицензию"}
+          </Button>
         </div>
-      </main>
-    </div>
+      </form>
+    </Form>
   );
 }
