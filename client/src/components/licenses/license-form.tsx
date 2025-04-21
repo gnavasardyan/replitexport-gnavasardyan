@@ -32,7 +32,7 @@ import { useToast } from "@/hooks/use-toast";
 interface LicenseFormProps {
   license?: LicenseResponse;
   onClose: () => void;
-  onSuccess?: () => void; // Делаем onSuccess опциональным
+  onSuccess?: () => void;
 }
 
 export function LicenseForm({ license, onClose, onSuccess }: LicenseFormProps) {
@@ -83,7 +83,7 @@ export function LicenseForm({ license, onClose, onSuccess }: LicenseFormProps) {
     });
     queryClient.invalidateQueries({ queryKey: ["licenses"] });
     onClose();
-    if (onSuccess) { // Проверяем, существует ли onSuccess перед вызовом
+    if (onSuccess) {
       onSuccess();
     }
   };
@@ -109,11 +109,27 @@ export function LicenseForm({ license, onClose, onSuccess }: LicenseFormProps) {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: Partial<LicenseResponse> }) => {
-      const putData = {
-        ...data,
-        client_id: Number(data.client_id)
-      };
-      return API.licenses.update(id, putData);
+      // Формируем только измененные поля для обновления
+      const changes: Partial<LicenseResponse> = {};
+      
+      if (data.client_id !== undefined && data.client_id !== license?.client_id) {
+        changes.client_id = Number(data.client_id);
+      }
+      
+      if (data.license_key !== undefined && data.license_key !== license?.license_key) {
+        changes.license_key = data.license_key;
+      }
+      
+      if (data.status !== undefined && data.status !== license?.status) {
+        changes.status = data.status;
+      }
+      
+      // Отправляем только если есть изменения
+      if (Object.keys(changes).length > 0) {
+        return API.licenses.update(id, changes);
+      }
+      
+      return Promise.resolve(); // Если нет изменений, просто резолвим промис
     },
     onSuccess: handleSuccess,
     onError: (error: any) => {
