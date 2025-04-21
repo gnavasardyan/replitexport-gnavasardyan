@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -11,28 +11,27 @@ import {
   LicenseResponse, 
   ClientResponse 
 } from "@shared/schema";
-import { 
-  Form, 
-  FormControl, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/components/ui/select";import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 
 interface DeviceFormProps {
   device?: DeviceResponse;
-  onClose: () => void;
+    onClose: () => void;
   onSuccess: () => void;
 }
 
@@ -64,17 +63,17 @@ export function DeviceForm({ device, onClose, onSuccess }: DeviceFormProps) {
     
     fetchData();
   }, [toast]);
-  
+
   const defaultValues = device
-    ? { 
+    ? {
         status: device.status,
         client_id: device.client_id,
         license_id: device.license_id,
-        inst_id: device.inst_id,
-        os_version: device.os_version,
-        local_id: device.local_id
+        lm_version: device.lm_version,
+        name: device.name,
       }
     : {
+        name: "",
         client_id: undefined,
         license_id: undefined,
         inst_id: "",
@@ -131,7 +130,7 @@ export function DeviceForm({ device, onClose, onSuccess }: DeviceFormProps) {
   const onSubmit = (data: InsertDevice) => {
     setIsSubmitting(true);
     
-    // Защита от null в поле status
+        // Защита от null в поле status
     const formattedData = {
       ...data,
       status: data.status || "not_configured"
@@ -153,7 +152,7 @@ export function DeviceForm({ device, onClose, onSuccess }: DeviceFormProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Клиент*</FormLabel>
-              <Select 
+              <Select
                 onValueChange={(value) => field.onChange(parseInt(value))}
                 value={field.value?.toString()}
               >
@@ -181,7 +180,7 @@ export function DeviceForm({ device, onClose, onSuccess }: DeviceFormProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Лицензия*</FormLabel>
-              <Select 
+              <Select
                 onValueChange={(value) => field.onChange(parseInt(value))}
                 value={field.value?.toString()}
               >
@@ -205,40 +204,22 @@ export function DeviceForm({ device, onClose, onSuccess }: DeviceFormProps) {
 
         <FormField
           control={form.control}
-          name="inst_id"
+          name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>ID установки*</FormLabel>
+              <FormLabel>Наименование устройства*</FormLabel>
               <FormControl>
-                <Input placeholder="Введите ID установки" {...field} />
+                <Input placeholder="Введите наименование устройства" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-
         <FormField
           control={form.control}
-          name="os_version"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Версия ОС*</FormLabel>
-              <FormControl>
-                <Input placeholder="Введите версию ОС" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-
-
-        <FormField
-          control={form.control}
-          name="local_id"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Локальный ID*</FormLabel>
+          name="lm_version"
+          render={({ field }) => (<FormItem>
+              <FormLabel>Версия ЛМ ЧЗ*</FormLabel>
               <FormControl>
                 <Input placeholder="Введите локальный ID" {...field} />
               </FormControl>
@@ -290,5 +271,5 @@ export function DeviceForm({ device, onClose, onSuccess }: DeviceFormProps) {
         </div>
       </form>
     </Form>
-  );
+    );
 }

@@ -159,11 +159,6 @@ export const API = {
       return res.json();
     },
     
-    create: async (update: InsertUpdate): Promise<UpdateResponse> => {
-      const res = await apiRequest("POST", "/api/v1/updates/", update);
-      return res.json();
-    },
-    
     update: async (id: number, update: Partial<UpdateResponse>): Promise<UpdateResponse> => {
       const res = await apiRequest("PUT", `/api/v1/updates/${id}`, update);
       return res.json();

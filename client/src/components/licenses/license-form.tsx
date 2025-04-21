@@ -40,7 +40,6 @@ export function LicenseForm({ license, clients, onClose, onSuccess }: LicenseFor
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedClientId, setSelectedClientId] = useState<number | undefined>(license?.client_id);
   const handleClientChange = (clientId: number) => setSelectedClientId(clientId);
 
 
@@ -59,6 +58,7 @@ export function LicenseForm({ license, clients, onClose, onSuccess }: LicenseFor
   const form = useForm({
     resolver: zodResolver(licenseFormSchema),
     defaultValues,
+    mode: "onChange"
   });
 
   const createMutation = useMutation({
@@ -104,15 +104,20 @@ export function LicenseForm({ license, clients, onClose, onSuccess }: LicenseFor
   const onSubmit = (data: InsertLicense) => {
     setIsSubmitting(true);
 
-    if (license?.license_id ) {
-      if (selectedClientId) {
-        updateMutation.mutate({ license_id: license.license_id, data: {license_key: data.license_key, status: data.status, client_id: selectedClientId} });
-      }
+    const selectedClient = clientOptions.find(c => c.label === form.getValues("client_name"))
+    if (selectedClient === undefined) {
+      toast({
+        title: "Ошибка",
+        description: `Не выбран клиент`,
+        variant: "destructive",
+      });
     } else {
-      if (selectedClientId) {
-        createMutation.mutate({...data, client_id: selectedClientId });
+      if (license?.license_id ) {        
+        updateMutation.mutate({ license_id: license.license_id, data: {license_key: data.license_key, status: data.status, client_id: selectedClient.value} });
+      } else {
+        createMutation.mutate({...data, client_id: selectedClient.value });
       }
-    }
+    }    
   };
 
   return (
@@ -120,21 +125,21 @@ export function LicenseForm({ license, clients, onClose, onSuccess }: LicenseFor
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         {license?.license_id && (
           <FormField
-            control={form.control}
-            name="client_id"
+            control={form.control}           
+            name="client_name"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Клиент:</FormLabel>
                 <Select onValueChange={(value) => {
-                  handleClientChange(Number(value))
-                  field.onChange(Number(value))
+                  
+                  field.onChange(value)
                 }} 
-                defaultValue={String(selectedClientId)}
+                defaultValue={clientOptions.find(c => c.value === license.client_id)?.label}
                 >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Выберите клиента" />
-                    </SelectTrigger>
+                    </SelectTrigger>                    
                   </FormControl>                  
                   <SelectContent>
                   {clientOptions.map((item: { label: string; value: number }) => (
@@ -144,40 +149,37 @@ export function LicenseForm({ license, clients, onClose, onSuccess }: LicenseFor
                     ))}
                   </SelectContent>
                   <FormMessage />
-                </Select>
-
+                </Select>                
               </FormItem>
-              
-
             )}
           />
         )}
 
         {!license && clientOptions && (
           <FormField
-            control={form.control}
-            name="client_id"
+            control={form.control}           
+            name="client_name"
             render={({ field }) => (
-              <FormItem>
+              <FormItem>                
                 <FormLabel>Клиент:</FormLabel>
                 <Select onValueChange={(value) => {
-                  handleClientChange(Number(value))
-                  field.onChange(Number(value))
+                  
+                  field.onChange(value)
                 }}
                 >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Выберите клиента" />
-                    </SelectTrigger>
+                    </SelectTrigger>                    
                    </FormControl>
                    <SelectContent>
-                  {clientOptions.map((item: { label: string; value: number }) => (
-                      <SelectItem key={item.value} value={String(item.value)}>
-                        {item.label}
-                      </SelectItem>
-                    ))}
+                    {clientOptions.map((item: { label: string; value: number }) => (
+                        <SelectItem key={item.value} value={item.label}>
+                          {item.label}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
-                <FormMessage />
+                <FormMessage />                
                 </Select>
               </FormItem>
             )}
