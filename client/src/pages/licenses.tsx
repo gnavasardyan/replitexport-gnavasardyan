@@ -127,7 +127,7 @@ export default function Licenses() {
 
   const handleConfirmDelete = () => {
     if (selectedLicense) {
-      deleteLicenseMutation.mutate(selectedLicense.id);
+      deleteLicenseMutation.mutate(selectedLicense.license_id);
     }
   };
 
