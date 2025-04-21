@@ -4,14 +4,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { API } from "@/lib/api";
 import { 
-  licenseFormSchema,
-  InsertLicense,
-  LicenseResponse,
-  LicenseStatusOptions,
+  licenseFormSchema, 
+  InsertLicense, 
+  LicenseResponse, 
+  ClientResponse,
+  LicenseStatusOptions 
 } from "@shared/schema";
-import { ClientResponse } from "@shared/schema";
 import { 
-    Form,
+  Form, 
   FormControl, 
   FormField, 
   FormItem, 
@@ -32,27 +32,25 @@ import { useToast } from "@/hooks/use-toast";
 interface LicenseFormProps {
   license?: LicenseResponse;
   onClose: () => void;
-  clients: ClientResponse[];
   onSuccess: () => void;
+  clients?: ClientResponse[];
 }
 
-export function LicenseForm({ license, clients, onClose, onSuccess }: LicenseFormProps) {
+export function LicenseForm({ license, onClose, onSuccess, clients = [] }: LicenseFormProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const handleClientChange = (clientId: number) => setSelectedClientId(clientId);
-
-
-  const clientOptions = clients.map((client) => ({
-    label: client.client_name,
-    value: client.client_id,
-  }));
 
   const defaultValues = license
-    ? { ...license }
-    : {      
-      license_key: "",
-      status: "AVAIL",
+    ? { 
+        client_id: license.client_id.toString(),
+        license_key: license.license_key,
+        status: license.status || "AVAIL"
+      }
+    : {
+        client_id: "",
+        license_key: "",
+        status: "AVAIL"
       };
 
   const form = useForm({
@@ -62,129 +60,115 @@ export function LicenseForm({ license, clients, onClose, onSuccess }: LicenseFor
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: InsertLicense) => API.licenses.create(data),
+    mutationFn: (data: InsertLicense) => {
+      // Преобразуем данные перед отправкой
+      const postData = {
+        client_id: parseInt(data.client_id),
+        license_key: data.license_key,
+        status: data.status
+      };
+      return API.licenses.create(postData);
+    },
     onSuccess: () => {
       toast({
         title: "Успех",
         description: "Лицензия успешно создана",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/v1/licenses"] });
+      queryClient.invalidateQueries({ queryKey: ["licenses"] });
       onSuccess();
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: "Ошибка",
-        description: `Не удалось создать лицензию`,
+        description: error.message || "Не удалось создать лицензию",
         variant: "destructive",
       });
-      setIsSubmitting(false);
     },
+    onSettled: () => {
+      setIsSubmitting(false);
+    }
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ license_id, data }: { license_id: number; data: Partial<LicenseResponse> }) => API.licenses.update(license_id, data),
-        onSuccess: () => {
+    mutationFn: ({ id, data }: { id: number; data: Partial<LicenseResponse> }) => {
+      const putData = {
+        client_id: parseInt(data.client_id as string),
+        license_key: data.license_key,
+        status: data.status
+      };
+      return API.licenses.update(id, putData);
+    },
+    onSuccess: () => {
       toast({
         title: "Успех",
         description: "Лицензия успешно обновлена",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/v1/licenses"] });
+      queryClient.invalidateQueries({ queryKey: ["licenses"] });
       onSuccess();
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: "Ошибка",
-        description: `Не удалось обновить лицензию`,
+        description: error.message || "Не удалось обновить лицензию",
         variant: "destructive",
       });
-      setIsSubmitting(false);
     },
+    onSettled: () => {
+      setIsSubmitting(false);
+    }
   });
 
-  const onSubmit = (data: InsertLicense) => {
+  const onSubmit = async (data: InsertLicense) => {
     setIsSubmitting(true);
-
-    const selectedClient = clientOptions.find(c => c.label === form.getValues("client_name"))
-    if (selectedClient === undefined) {
-      toast({
-        title: "Ошибка",
-        description: `Не выбран клиент`,
-        variant: "destructive",
-      });
-    } else {
-      if (license?.license_id ) {        
-        updateMutation.mutate({ license_id: license.license_id, data: {license_key: data.license_key, status: data.status, client_id: selectedClient.value} });
+    
+    try {
+      if (license) {
+        await updateMutation.mutateAsync({ 
+          id: license.id, 
+          data 
+        });
       } else {
-        createMutation.mutate({...data, client_id: selectedClient.value });
+        await createMutation.mutateAsync(data);
       }
-    }    
+    } catch (error) {
+      console.error("Ошибка при сохранении лицензии:", error);
+    }
   };
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        {license?.license_id && (
-          <FormField
-            control={form.control}           
-            name="client_name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Клиент:</FormLabel>
-                <Select onValueChange={(value) => {
-                  
-                  field.onChange(value)
-                }} 
-                defaultValue={clientOptions.find(c => c.value === license.client_id)?.label}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Выберите клиента" />
-                    </SelectTrigger>                    
-                  </FormControl>                  
-                  <SelectContent>
-                  {clientOptions.map((item: { label: string; value: number }) => (
-                      <SelectItem key={item.value} value={String(item.value)}>
-                        {item.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                  <FormMessage />
-                </Select>                
-              </FormItem>
-            )}
-          />
-        )}
-
-        {!license && clientOptions && (
-          <FormField
-            control={form.control}           
-            name="client_name"
-            render={({ field }) => (
-              <FormItem>                
-                <FormLabel>Клиент:</FormLabel>
-                <Select onValueChange={(value) => {
-                  
-                  field.onChange(value)
-                }}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Выберите клиента" />
-                    </SelectTrigger>                    
-                   </FormControl>
-                   <SelectContent>
-                    {clientOptions.map((item: { label: string; value: number }) => (
-                        <SelectItem key={item.value} value={item.label}>
-                          {item.label}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                <FormMessage />                
-                </Select>
-              </FormItem>
-            )}
-          />
-        )}
+        <FormField
+          control={form.control}
+          name="client_id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Клиент*</FormLabel>
+              <Select 
+                onValueChange={field.onChange}
+                value={field.value}
+                disabled={isSubmitting}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Выберите клиента" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {clients.map((client) => (
+                    <SelectItem 
+                      key={client.client_id} 
+                      value={client.client_id.toString()}
+                    >
+                      {client.client_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <FormField
           control={form.control}
@@ -193,7 +177,11 @@ export function LicenseForm({ license, clients, onClose, onSuccess }: LicenseFor
             <FormItem>
               <FormLabel>Ключ лицензии*</FormLabel>
               <FormControl>
-                <Input placeholder="Введите ключ лицензии" {...field} />
+                <Input 
+                  placeholder="Введите ключ лицензии" 
+                  {...field} 
+                  disabled={isSubmitting}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -206,7 +194,11 @@ export function LicenseForm({ license, clients, onClose, onSuccess }: LicenseFor
           render={({ field }) => (
             <FormItem>
               <FormLabel>Статус лицензии*</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select 
+                onValueChange={field.onChange} 
+                value={field.value}
+                disabled={isSubmitting}
+              >
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Выберите статус лицензии" />
@@ -214,7 +206,10 @@ export function LicenseForm({ license, clients, onClose, onSuccess }: LicenseFor
                 </FormControl>
                 <SelectContent>
                   {LicenseStatusOptions.map(status => (
-                    <SelectItem key={status.value} value={status.value}>
+                    <SelectItem 
+                      key={status.value} 
+                      value={status.value}
+                    >
                       {status.label}
                     </SelectItem>
                   ))}
@@ -236,7 +231,7 @@ export function LicenseForm({ license, clients, onClose, onSuccess }: LicenseFor
           </Button>
           <Button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !form.formState.isValid}
           >
             {isSubmitting ? "Сохранение..." : license ? "Обновить лицензию" : "Добавить лицензию"}
           </Button>
