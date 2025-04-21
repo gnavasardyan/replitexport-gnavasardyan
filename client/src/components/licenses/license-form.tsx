@@ -32,7 +32,7 @@ import { useToast } from "@/hooks/use-toast";
 interface LicenseFormProps {
   license?: LicenseResponse;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess?: () => void; // Делаем onSuccess опциональным
 }
 
 export function LicenseForm({ license, onClose, onSuccess }: LicenseFormProps) {
@@ -76,23 +76,27 @@ export function LicenseForm({ license, onClose, onSuccess }: LicenseFormProps) {
     defaultValues,
   });
 
+  const handleSuccess = () => {
+    toast({
+      title: "Успех",
+      description: license ? "Лицензия успешно обновлена" : "Лицензия успешно создана",
+    });
+    queryClient.invalidateQueries({ queryKey: ["licenses"] });
+    onClose();
+    if (onSuccess) { // Проверяем, существует ли onSuccess перед вызовом
+      onSuccess();
+    }
+  };
+
   const createMutation = useMutation({
     mutationFn: (data: InsertLicense) => {
-      // Преобразуем client_id в число перед отправкой
       const postData = {
         ...data,
         client_id: Number(data.client_id)
       };
       return API.licenses.create(postData);
     },
-    onSuccess: () => {
-      toast({
-        title: "Успех",
-        description: "Лицензия успешно создана",
-      });
-      queryClient.invalidateQueries({ queryKey: ["licenses"] });
-      onSuccess();
-    },
+    onSuccess: handleSuccess,
     onError: (error: any) => {
       toast({
         title: "Ошибка",
@@ -105,21 +109,13 @@ export function LicenseForm({ license, onClose, onSuccess }: LicenseFormProps) {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: Partial<LicenseResponse> }) => {
-      // Преобразуем client_id в число перед отправкой
       const putData = {
         ...data,
         client_id: Number(data.client_id)
       };
       return API.licenses.update(id, putData);
     },
-    onSuccess: () => {
-      toast({
-        title: "Успех",
-        description: "Лицензия успешно обновлена",
-      });
-      queryClient.invalidateQueries({ queryKey: ["licenses"] });
-      onSuccess();
-    },
+    onSuccess: handleSuccess,
     onError: (error: any) => {
       toast({
         title: "Ошибка",
@@ -175,7 +171,6 @@ export function LicenseForm({ license, onClose, onSuccess }: LicenseFormProps) {
           )}
         />
 
-        {/* Остальные поля формы остаются без изменений */}
         <FormField
           control={form.control}
           name="license_key"
