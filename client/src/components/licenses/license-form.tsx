@@ -91,8 +91,9 @@ export function LicenseForm({ license, onClose, onSuccess }: LicenseFormProps) {
   const createMutation = useMutation({
     mutationFn: (data: InsertLicense) => {
       const postData = {
-        ...data,
-        client_id: Number(data.client_id)
+        client_id: Number(data.client_id),
+        license_key: data.license_key,
+        status: data.status
       };
       return API.licenses.create(postData);
     },
@@ -108,28 +109,14 @@ export function LicenseForm({ license, onClose, onSuccess }: LicenseFormProps) {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<LicenseResponse> }) => {
-      // Формируем только измененные поля для обновления
-      const changes: Partial<LicenseResponse> = {};
-      
-      if (data.client_id !== undefined && data.client_id !== license?.client_id) {
-        changes.client_id = Number(data.client_id);
-      }
-      
-      if (data.license_key !== undefined && data.license_key !== license?.license_key) {
-        changes.license_key = data.license_key;
-      }
-      
-      if (data.status !== undefined && data.status !== license?.status) {
-        changes.status = data.status;
-      }
-      
-      // Отправляем только если есть изменения
-      if (Object.keys(changes).length > 0) {
-        return API.licenses.update(id, changes);
-      }
-      
-      return Promise.resolve(); // Если нет изменений, просто резолвим промис
+    mutationFn: ({ id, data }: { id: number; data: InsertLicense }) => {
+      // Формируем полный объект для PUT-запроса
+      const putData = {
+        client_id: Number(data.client_id),
+        license_key: data.license_key,
+        status: data.status
+      };
+      return API.licenses.update(id, putData);
     },
     onSuccess: handleSuccess,
     onError: (error: any) => {
