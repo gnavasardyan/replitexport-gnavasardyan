@@ -33,22 +33,40 @@ interface LicenseFormProps {
   license?: LicenseResponse;
   onClose: () => void;
   onSuccess: () => void;
-  clients?: ClientResponse[];
 }
 
-export function LicenseForm({ license, onClose, onSuccess, clients = [] }: LicenseFormProps) {
+export function LicenseForm({ license, onClose, onSuccess }: LicenseFormProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const [clients, setClients] = useState<ClientResponse[]>([]);
+  
+  useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        const response = await API.clients.getAll();
+        setClients(response);
+      } catch (error) {
+        console.error("Ошибка при загрузке клиентов:", error);
+        toast({
+          title: "Ошибка",
+          description: "Не удалось загрузить список клиентов",
+          variant: "destructive",
+        });
+      }
+    };
+    
+    fetchClients();
+  }, [toast]);
+  
   const defaultValues = license
     ? { 
-        client_id: license.client_id.toString(),
+        client_id: license.client_id,
         license_key: license.license_key,
         status: license.status || "AVAIL"
       }
     : {
-        client_id: "",
+        client_id: undefined,
         license_key: "",
         status: "AVAIL"
       };
@@ -56,16 +74,14 @@ export function LicenseForm({ license, onClose, onSuccess, clients = [] }: Licen
   const form = useForm({
     resolver: zodResolver(licenseFormSchema),
     defaultValues,
-    mode: "onChange"
   });
 
   const createMutation = useMutation({
     mutationFn: (data: InsertLicense) => {
-      // Преобразуем данные перед отправкой
+      // Преобразуем client_id в число перед отправкой
       const postData = {
-        client_id: parseInt(data.client_id),
-        license_key: data.license_key,
-        status: data.status
+        ...data,
+        client_id: Number(data.client_id)
       };
       return API.licenses.create(postData);
     },
@@ -77,24 +93,22 @@ export function LicenseForm({ license, onClose, onSuccess, clients = [] }: Licen
       queryClient.invalidateQueries({ queryKey: ["licenses"] });
       onSuccess();
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
       toast({
         title: "Ошибка",
-        description: error.message || "Не удалось создать лицензию",
+        description: `Не удалось создать лицензию: ${error.message}`,
         variant: "destructive",
       });
-    },
-    onSettled: () => {
       setIsSubmitting(false);
-    }
+    },
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: Partial<LicenseResponse> }) => {
+      // Преобразуем client_id в число перед отправкой
       const putData = {
-        client_id: parseInt(data.client_id as string),
-        license_key: data.license_key,
-        status: data.status
+        ...data,
+        client_id: Number(data.client_id)
       };
       return API.licenses.update(id, putData);
     },
@@ -106,32 +120,23 @@ export function LicenseForm({ license, onClose, onSuccess, clients = [] }: Licen
       queryClient.invalidateQueries({ queryKey: ["licenses"] });
       onSuccess();
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
       toast({
         title: "Ошибка",
-        description: error.message || "Не удалось обновить лицензию",
+        description: `Не удалось обновить лицензию: ${error.message}`,
         variant: "destructive",
       });
-    },
-    onSettled: () => {
       setIsSubmitting(false);
-    }
+    },
   });
 
-  const onSubmit = async (data: InsertLicense) => {
+  const onSubmit = (data: InsertLicense) => {
     setIsSubmitting(true);
     
-    try {
-      if (license) {
-        await updateMutation.mutateAsync({ 
-          id: license.id, 
-          data 
-        });
-      } else {
-        await createMutation.mutateAsync(data);
-      }
-    } catch (error) {
-      console.error("Ошибка при сохранении лицензии:", error);
+    if (license) {
+      updateMutation.mutate({ id: license.id, data });
+    } else {
+      createMutation.mutate(data);
     }
   };
 
@@ -145,8 +150,8 @@ export function LicenseForm({ license, onClose, onSuccess, clients = [] }: Licen
             <FormItem>
               <FormLabel>Клиент*</FormLabel>
               <Select 
-                onValueChange={field.onChange}
-                value={field.value}
+                onValueChange={(value) => field.onChange(Number(value))}
+                value={field.value?.toString()}
                 disabled={isSubmitting}
               >
                 <FormControl>
@@ -170,6 +175,7 @@ export function LicenseForm({ license, onClose, onSuccess, clients = [] }: Licen
           )}
         />
 
+        {/* Остальные поля формы остаются без изменений */}
         <FormField
           control={form.control}
           name="license_key"
@@ -206,10 +212,7 @@ export function LicenseForm({ license, onClose, onSuccess, clients = [] }: Licen
                 </FormControl>
                 <SelectContent>
                   {LicenseStatusOptions.map(status => (
-                    <SelectItem 
-                      key={status.value} 
-                      value={status.value}
-                    >
+                    <SelectItem key={status.value} value={status.value}>
                       {status.label}
                     </SelectItem>
                   ))}
@@ -231,7 +234,7 @@ export function LicenseForm({ license, onClose, onSuccess, clients = [] }: Licen
           </Button>
           <Button
             type="submit"
-            disabled={isSubmitting || !form.formState.isValid}
+            disabled={isSubmitting}
           >
             {isSubmitting ? "Сохранение..." : license ? "Обновить лицензию" : "Добавить лицензию"}
           </Button>
