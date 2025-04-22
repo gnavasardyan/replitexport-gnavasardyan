@@ -234,16 +234,168 @@ export default function Licenses() {
               )}
             </TabsContent>
 
-            <TabsContent value="avail">
-              <div className="text-center py-8">Функциональность фильтрации находится в разработке</div>
+            <TabsContent value="avail" className="space-y-4">
+              {isLoading ? (
+                <div className="text-center py-8">Загрузка данных...</div>
+              ) : error ? (
+                <div className="text-center py-8 text-red-500">
+                  Ошибка загрузки данных: {error.message}
+                </div>
+              ) : !licenses || licenses.length === 0 ? (
+                <div className="text-center py-8">Нет доступных лицензий</div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {licenses.filter(license => license.status === "AVAIL").map((license) => {
+                    const badgeInfo = getLicenseBadge(license.status);
+                    const clientName = getClientName(license.client_id);
+                    return (
+                      // Render the same card as in "all" tab
+                      <Card key={license.id} className="overflow-hidden">
+                        {/* Same card content as above */}
+                        <CardHeader className="pb-2">
+                          <div className="flex justify-between items-start">
+                            <CardTitle className="text-xl font-mono">{license.license_key}</CardTitle>
+                            <Badge variant={badgeInfo.variant} className={badgeInfo.className}>
+                              {badgeInfo.label}
+                            </Badge>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="pb-2">
+                          <div className="space-y-2 text-sm">
+                            <p><span className="font-medium">Клиент:</span> {clientName}</p>
+                            <p><span className="font-medium">Дата выдачи:</span> {formatDate(license.issuedDate)}</p>
+                          </div>
+                        </CardContent>
+                        <Separator />
+                        <CardFooter className="flex justify-between pt-4">
+                          <Button variant="outline" size="sm" className="gap-1" onClick={() => handleViewLicense(license)}>
+                            <Eye size={14} />
+                            Просмотр
+                          </Button>
+                          <div className="flex gap-2">
+                            <Button variant="ghost" size="sm" className="gap-1 text-blue-600" onClick={() => handleEditLicense(license)}>
+                              <Pencil size={14} />
+                              Изменить
+                            </Button>
+                            <Button variant="ghost" size="sm" className="gap-1 text-red-600" onClick={() => handleDeleteLicense(license)}>
+                              <Trash2 size={14} />
+                              Удалить
+                            </Button>
+                          </div>
+                        </CardFooter>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
             </TabsContent>
 
-            <TabsContent value="used">
-              <div className="text-center py-8">Функциональность фильтрации находится в разработке</div>
+            <TabsContent value="used" className="space-y-4">
+              {isLoading ? (
+                <div className="text-center py-8">Загрузка данных...</div>
+              ) : error ? (
+                <div className="text-center py-8 text-red-500">
+                  Ошибка загрузки данных: {error.message}
+                </div>
+              ) : !licenses || licenses.length === 0 ? (
+                <div className="text-center py-8">Нет используемых лицензий</div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {licenses.filter(license => license.status === "USED").map((license) => {
+                    const badgeInfo = getLicenseBadge(license.status);
+                    const clientName = getClientName(license.client_id);
+                    return (
+                      <Card key={license.id} className="overflow-hidden">
+                        <CardHeader className="pb-2">
+                          <div className="flex justify-between items-start">
+                            <CardTitle className="text-xl font-mono">{license.license_key}</CardTitle>
+                            <Badge variant={badgeInfo.variant} className={badgeInfo.className}>
+                              {badgeInfo.label}
+                            </Badge>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="pb-2">
+                          <div className="space-y-2 text-sm">
+                            <p><span className="font-medium">Клиент:</span> {clientName}</p>
+                            <p><span className="font-medium">Дата выдачи:</span> {formatDate(license.issuedDate)}</p>
+                          </div>
+                        </CardContent>
+                        <Separator />
+                        <CardFooter className="flex justify-between pt-4">
+                          <Button variant="outline" size="sm" className="gap-1" onClick={() => handleViewLicense(license)}>
+                            <Eye size={14} />
+                            Просмотр
+                          </Button>
+                          <div className="flex gap-2">
+                            <Button variant="ghost" size="sm" className="gap-1 text-blue-600" onClick={() => handleEditLicense(license)}>
+                              <Pencil size={14} />
+                              Изменить
+                            </Button>
+                            <Button variant="ghost" size="sm" className="gap-1 text-red-600" onClick={() => handleDeleteLicense(license)}>
+                              <Trash2 size={14} />
+                              Удалить
+                            </Button>
+                          </div>
+                        </CardFooter>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
             </TabsContent>
 
-            <TabsContent value="blocked">
-              <div className="text-center py-8">Функциональность фильтрации находится в разработке</div>
+            <TabsContent value="blocked" className="space-y-4">
+              {isLoading ? (
+                <div className="text-center py-8">Загрузка данных...</div>
+              ) : error ? (
+                <div className="text-center py-8 text-red-500">
+                  Ошибка загрузки данных: {error.message}
+                </div>
+              ) : !licenses || licenses.length === 0 ? (
+                <div className="text-center py-8">Нет заблокированных лицензий</div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {licenses.filter(license => license.status === "BLOCKED").map((license) => {
+                    const badgeInfo = getLicenseBadge(license.status);
+                    const clientName = getClientName(license.client_id);
+                    return (
+                      <Card key={license.id} className="overflow-hidden">
+                        <CardHeader className="pb-2">
+                          <div className="flex justify-between items-start">
+                            <CardTitle className="text-xl font-mono">{license.license_key}</CardTitle>
+                            <Badge variant={badgeInfo.variant} className={badgeInfo.className}>
+                              {badgeInfo.label}
+                            </Badge>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="pb-2">
+                          <div className="space-y-2 text-sm">
+                            <p><span className="font-medium">Клиент:</span> {clientName}</p>
+                            <p><span className="font-medium">Дата выдачи:</span> {formatDate(license.issuedDate)}</p>
+                          </div>
+                        </CardContent>
+                        <Separator />
+                        <CardFooter className="flex justify-between pt-4">
+                          <Button variant="outline" size="sm" className="gap-1" onClick={() => handleViewLicense(license)}>
+                            <Eye size={14} />
+                            Просмотр
+                          </Button>
+                          <div className="flex gap-2">
+                            <Button variant="ghost" size="sm" className="gap-1 text-blue-600" onClick={() => handleEditLicense(license)}>
+                              <Pencil size={14} />
+                              Изменить
+                            </Button>
+                            <Button variant="ghost" size="sm" className="gap-1 text-red-600" onClick={() => handleDeleteLicense(license)}>
+                              <Trash2 size={14} />
+                              Удалить
+                            </Button>
+                          </div>
+                        </CardFooter>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
             </TabsContent>
           </Tabs>
 

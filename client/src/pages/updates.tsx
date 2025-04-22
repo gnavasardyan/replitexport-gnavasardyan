@@ -250,32 +250,38 @@ export default function Updates() {
             </TabsContent>
 
             <TabsContent value="active" className="space-y-4">
-              {isLoadingActive ? (
-                <div className="text-center py-8">Загрузка ACTIVE обновлений...</div>
-              ) : activeError ? (
-                <div className="text-center py-8 text-red-500">Ошибка загрузки ACTIVE обновлений</div>
+              {isLoadingAll ? (
+                <div className="text-center py-8">Загрузка обновлений...</div>
+              ) : allError ? (
+                <div className="text-center py-8 text-red-500">Ошибка загрузки данных</div>
+              ) : !allUpdates || allUpdates.length === 0 ? (
+                <div className="text-center py-8">Нет активных обновлений</div>
               ) : (
-                renderUpdateCards(activeUpdates)
+                renderUpdateCards(allUpdates.filter(update => update.status === "ACTIVE"))
               )}
             </TabsContent>
 
             <TabsContent value="draft" className="space-y-4">
-              {isLoadingDraft ? (
-                <div className="text-center py-8">Загрузка DRAFT обновлений...</div>
-              ) : draftError ? (
-                <div className="text-center py-8 text-red-500">Ошибка загрузки DRAFT обновлений</div>
+              {isLoadingAll ? (
+                <div className="text-center py-8">Загрузка обновлений...</div>
+              ) : allError ? (
+                <div className="text-center py-8 text-red-500">Ошибка загрузки данных</div>
+              ) : !allUpdates || allUpdates.length === 0 ? (
+                <div className="text-center py-8">Нет черновиков обновлений</div>
               ) : (
-                renderUpdateCards(draftUpdates)
+                renderUpdateCards(allUpdates.filter(update => update.status === "DRAFT"))
               )}
             </TabsContent>
 
             <TabsContent value="obsolete" className="space-y-4">
-              {isLoadingObsolete ? (
-                <div className="text-center py-8">Загрузка OBSOLETE обновлений...</div>
-              ) : obsoleteError ? (
-                <div className="text-center py-8 text-red-500">Ошибка загрузки OBSOLETE обновлений</div>
+              {isLoadingAll ? (
+                <div className="text-center py-8">Загрузка обновлений...</div>
+              ) : allError ? (
+                <div className="text-center py-8 text-red-500">Ошибка загрузки данных</div>
+              ) : !allUpdates || allUpdates.length === 0 ? (
+                <div className="text-center py-8">Нет устаревших обновлений</div>
               ) : (
-                renderUpdateCards(obsoleteUpdates)
+                renderUpdateCards(allUpdates.filter(update => update.status === "OBSOLETE"))
               )}
             </TabsContent>
           </Tabs>
