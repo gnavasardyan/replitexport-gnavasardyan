@@ -111,9 +111,10 @@ export default function Clients() {
     return date.toLocaleDateString("ru-RU");
   };
 
-  // Фильтрация клиентов по поисковому запросу
+  // Фильтрация клиентов по поисковому запросу (имя или ИНН)
   const filteredClients = clients?.filter(client => 
-    client.client_name.toLowerCase().includes(searchQuery.toLowerCase())
+    client.client_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    client.inn.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -134,7 +135,7 @@ export default function Clients() {
         <div className="relative">
           <input
             type="text"
-            placeholder="Поиск клиентов по названию..."
+            placeholder="Поиск клиентов по названию или ИНН..."
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
