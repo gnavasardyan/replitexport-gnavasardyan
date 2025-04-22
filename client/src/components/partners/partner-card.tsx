@@ -82,13 +82,13 @@ export function PartnerCard({
 
           <div className="flex flex-col mt-4 space-y-3">
              {partner.kpp && (
-              <div className="flex items-center text-sm text-gray-600 px-3 py-2 bg-gray-50 rounded-md shadow-sm">
+              <div className="flex items-center text-sm text-gray-600 px-3 py-2 bg-gray-50/50 rounded-md">
                 <span className="mr-3 text-gray-400 font-medium">КПП:</span>
                 <span className="font-medium">{partner.kpp}</span>
               </div>
             )}
             {partner.ogrn && (
-              <div className="flex items-center text-sm text-gray-600 px-3 py-2 bg-gray-50 rounded-md shadow-sm">
+              <div className="flex items-center text-sm text-gray-600 px-3 py-2 bg-gray-50/50 rounded-md">
                 <span className="mr-3 text-gray-400 font-medium">ОГРН:</span>
                 <span className="font-medium">{partner.ogrn}</span>
               </div>
