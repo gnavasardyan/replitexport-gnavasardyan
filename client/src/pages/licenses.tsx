@@ -451,7 +451,7 @@ export default function Licenses() {
                       status: data.status || "AVAIL"
                     };
                     updateLicenseMutation.mutate({
-                      license_id: selectedLicense.license_id,
+                      id: selectedLicense.license_id,
                       data: licenseData
                     });
                   }}

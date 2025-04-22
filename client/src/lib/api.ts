@@ -110,8 +110,8 @@ export const API = {
       return res.json();
     },
     
-    update: async (license_id: number, license: { client_id?: number, license_key?: string, status?: string }): Promise<LicenseResponse> => {
-      const res = await apiRequest("PUT", `/api/v1/licenses/${license_id}`, license);
+    update: async (id: number, license: { client_id?: number, license_key?: string, status?: string }): Promise<LicenseResponse> => {
+      const res = await apiRequest("PUT", `/api/v1/licenses/${id}`, license);
       return res.json();
     },
     
