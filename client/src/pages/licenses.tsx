@@ -438,8 +438,12 @@ export default function Licenses() {
               </DialogHeader>
               {selectedLicense && (
                 <LicenseForm
-                  clients={clients || []}
-                  onSubmit={(data) => {
+                  license={selectedLicense}
+                  onClose={() => setOpenEditLicense(false)}
+                  onSuccess={() => {
+                    queryClient.invalidateQueries({ queryKey: ["licenses"] });
+                    setOpenEditLicense(false);
+                  }}
                     const licenseData = {
                       ...selectedLicense,
                       client_id: Number(data.client_id),
