@@ -219,20 +219,9 @@ export default function Updates() {
         <div className="container mx-auto p-4">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold">Обновления</h1>
-            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-              <SelectTrigger>
-                <SelectValue placeholder="Выберите статус" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Все</SelectItem>
-                <SelectItem value="ACTIVE">ACTIVE</SelectItem>
-                <SelectItem value="DRAFT">DRAFT</SelectItem>
-                <SelectItem value="OBSOLETE">OBSOLETE</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
 
-          <Tabs defaultValue="all">
+          <Tabs defaultValue="all" onValueChange={(value) => setSelectedStatus(value === "all" ? "" : value.toUpperCase())}>
             <TabsList className="mb-4">
               <TabsTrigger value="all">Все</TabsTrigger>
               <TabsTrigger value="active">ACTIVE</TabsTrigger>
@@ -255,10 +244,8 @@ export default function Updates() {
                 <div className="text-center py-8">Загрузка обновлений...</div>
               ) : error ? (
                 <div className="text-center py-8 text-red-500">Ошибка загрузки данных</div>
-              ) : !updates || updates.length === 0 ? (
-                <div className="text-center py-8">Нет активных обновлений</div>
               ) : (
-                renderUpdateCards(updates.filter(u => u.status === "ACTIVE"))
+                renderUpdateCards(updates?.filter(u => u.status === "ACTIVE"))
               )}
             </TabsContent>
 
@@ -267,10 +254,8 @@ export default function Updates() {
                 <div className="text-center py-8">Загрузка обновлений...</div>
               ) : error ? (
                 <div className="text-center py-8 text-red-500">Ошибка загрузки данных</div>
-              ) : !updates || updates.length === 0 ? (
-                <div className="text-center py-8">Нет черновиков обновлений</div>
               ) : (
-                renderUpdateCards(updates.filter(u => u.status === "DRAFT"))
+                renderUpdateCards(updates?.filter(u => u.status === "DRAFT"))
               )}
             </TabsContent>
 
@@ -279,10 +264,8 @@ export default function Updates() {
                 <div className="text-center py-8">Загрузка обновлений...</div>
               ) : error ? (
                 <div className="text-center py-8 text-red-500">Ошибка загрузки данных</div>
-              ) : !updates || updates.length === 0 ? (
-                <div className="text-center py-8">Нет устаревших обновлений</div>
               ) : (
-                renderUpdateCards(updates.filter(u => u.status === "OBSOLETE"))
+                renderUpdateCards(updates?.filter(u => u.status === "OBSOLETE"))
               )}
             </TabsContent>
           </Tabs>
