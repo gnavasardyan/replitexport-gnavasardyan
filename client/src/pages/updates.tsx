@@ -25,6 +25,7 @@ export default function Updates() {
     release_notes: ""
   });
   const [openViewUpdate, setOpenViewUpdate] = useState(false); // Added state for view dialog
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
 
 
   // Функция для получения обновлений по статусу
@@ -36,39 +37,12 @@ export default function Updates() {
 
   // Запросы данных
   const { 
-    data: allUpdates, 
-    isLoading: isLoadingAll, 
-    error: allError 
+    data: updates, 
+    isLoading, 
+    error 
   } = useQuery({
-    queryKey: ["updates"],
-    queryFn: () => fetchUpdatesByStatus(),
-  });
-
-  const { 
-    data: activeUpdates, 
-    isLoading: isLoadingActive, 
-    error: activeError 
-  } = useQuery({
-    queryKey: ["updates", "ACTIVE"],
-    queryFn: () => fetchUpdatesByStatus("ACTIVE"),
-  });
-
-  const { 
-    data: draftUpdates, 
-    isLoading: isLoadingDraft, 
-    error: draftError 
-  } = useQuery({
-    queryKey: ["updates", "DRAFT"],
-    queryFn: () => fetchUpdatesByStatus("DRAFT"),
-  });
-
-  const { 
-    data: obsoleteUpdates, 
-    isLoading: isLoadingObsolete, 
-    error: obsoleteError 
-  } = useQuery({
-    queryKey: ["updates", "OBSOLETE"],
-    queryFn: () => fetchUpdatesByStatus("OBSOLETE"),
+    queryKey: ["updates", selectedStatus],
+    queryFn: () => fetchUpdatesByStatus(selectedStatus === "all" ? undefined : selectedStatus),
   });
 
   // Мутация для обновления
@@ -245,6 +219,17 @@ export default function Updates() {
         <div className="container mx-auto p-4">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold">Обновления</h1>
+            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+              <SelectTrigger>
+                <SelectValue placeholder="Выберите статус" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Все</SelectItem>
+                <SelectItem value="ACTIVE">ACTIVE</SelectItem>
+                <SelectItem value="DRAFT">DRAFT</SelectItem>
+                <SelectItem value="OBSOLETE">OBSOLETE</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <Tabs defaultValue="all">
@@ -256,48 +241,48 @@ export default function Updates() {
             </TabsList>
 
             <TabsContent value="all" className="space-y-4">
-              {isLoadingAll ? (
+              {isLoading ? (
                 <div className="text-center py-8">Загрузка обновлений...</div>
-              ) : allError ? (
+              ) : error ? (
                 <div className="text-center py-8 text-red-500">Ошибка загрузки данных</div>
               ) : (
-                renderUpdateCards(allUpdates)
+                renderUpdateCards(updates)
               )}
             </TabsContent>
 
             <TabsContent value="active" className="space-y-4">
-              {isLoadingActive ? (
+              {isLoading ? (
                 <div className="text-center py-8">Загрузка обновлений...</div>
-              ) : activeError ? (
+              ) : error ? (
                 <div className="text-center py-8 text-red-500">Ошибка загрузки данных</div>
-              ) : !activeUpdates || activeUpdates.length === 0 ? (
+              ) : !updates || updates.length === 0 ? (
                 <div className="text-center py-8">Нет активных обновлений</div>
               ) : (
-                renderUpdateCards(activeUpdates)
+                renderUpdateCards(updates.filter(u => u.status === "ACTIVE"))
               )}
             </TabsContent>
 
             <TabsContent value="draft" className="space-y-4">
-              {isLoadingDraft ? (
+              {isLoading ? (
                 <div className="text-center py-8">Загрузка обновлений...</div>
-              ) : draftError ? (
+              ) : error ? (
                 <div className="text-center py-8 text-red-500">Ошибка загрузки данных</div>
-              ) : !draftUpdates || draftUpdates.length === 0 ? (
+              ) : !updates || updates.length === 0 ? (
                 <div className="text-center py-8">Нет черновиков обновлений</div>
               ) : (
-                renderUpdateCards(draftUpdates)
+                renderUpdateCards(updates.filter(u => u.status === "DRAFT"))
               )}
             </TabsContent>
 
             <TabsContent value="obsolete" className="space-y-4">
-              {isLoadingObsolete ? (
+              {isLoading ? (
                 <div className="text-center py-8">Загрузка обновлений...</div>
-              ) : obsoleteError ? (
+              ) : error ? (
                 <div className="text-center py-8 text-red-500">Ошибка загрузки данных</div>
-              ) : !obsoleteUpdates || obsoleteUpdates.length === 0 ? (
+              ) : !updates || updates.length === 0 ? (
                 <div className="text-center py-8">Нет устаревших обновлений</div>
               ) : (
-                renderUpdateCards(obsoleteUpdates)
+                renderUpdateCards(updates.filter(u => u.status === "OBSOLETE"))
               )}
             </TabsContent>
           </Tabs>
