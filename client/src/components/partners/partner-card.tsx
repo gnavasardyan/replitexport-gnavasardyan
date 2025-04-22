@@ -56,7 +56,7 @@ export function PartnerCard({
   const typeColor = getTypeColor(partner.type || "");
   return (
     <Card className="hover:shadow-md transition-shadow duration-300 border border-gray-200 overflow-hidden">
-      <CardHeader className="px-6 py-5 border-b border-gray-200 flex items-center justify-end">
+      <CardHeader className="px-6 py-5 border-b border-gray-200 flex items-center">
         <div className="flex items-center gap-4">
           {partner.status && (
             <Badge className={cn("text-xs", statusColor)} variant="outline">
@@ -66,21 +66,21 @@ export function PartnerCard({
           <div className={cn("w-10 h-10 rounded-full flex items-center justify-center", typeColor,)}>
             <span className="font-bold">{initials}</span>
           </div>
-          <div className="text-right">
+          <div>
             <h3 className="text-lg font-medium text-gray-900">{partner.partner_name}</h3>
             <p className="text-sm text-gray-500">{partner.inn}</p>
           </div>
         </div>
       </CardHeader>
       <CardContent className="px-6 py-4 space-y-4">
-          <div className="flex items-center text-sm text-gray-600 justify-end"> 
+          <div className="flex items-center text-sm text-gray-600"> 
               <Mail className="mr-2 w-4 h-4 text-gray-400" />
               <span>{partner.email}</span>
           </div>
           <Separator />
           
 
-          <div className="flex flex-col items-end mt-4 space-y-3">
+          <div className="flex flex-col mt-4 space-y-3">
              {partner.kpp && (
               <div className="flex items-center text-sm text-gray-600 px-3 py-2 bg-gray-50 rounded-md shadow-sm">
                 <span className="mr-3 text-gray-400 font-medium">КПП:</span>
@@ -100,7 +100,7 @@ export function PartnerCard({
              </div>
             )}
           </div>
-          <div className="flex flex-col items-end mt-4">
+          <div className="flex flex-col mt-4">
               {partner.apitoken && (
               <div className="flex text-sm text-gray-600">
                 <span className="mr-2 w-4 h-4 text-gray-400 font-medium">API TOKEN:</span>
@@ -109,7 +109,7 @@ export function PartnerCard({
            )}
           </div>
       </CardContent>
-      <CardFooter className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex justify-end space-x-2">
+      <CardFooter className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex justify-between space-x-2">
             
         
         <button
