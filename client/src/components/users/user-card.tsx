@@ -9,7 +9,8 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, Eye } from "lucide-react";
+import { Edit, Trash2, Eye, Pencil } from "lucide-react";
+import { Separator } from "@/components/ui/separator"; // Assumed to exist
 
 interface UserCardProps {
   user: UserResponse;
@@ -63,8 +64,18 @@ export function UserCard({ user, onEdit, onDelete, onView }: UserCardProps) {
           )}
         </div>
       </CardContent>
+      <Separator />
       <CardFooter className="flex justify-end pt-4">
         <div className="flex gap-2">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="gap-1 text-green-600" 
+            onClick={() => onView(user)}
+          >
+            <Eye size={14} />
+            Просмотр
+          </Button>
           <Button 
             variant="ghost" 
             size="sm" 
@@ -82,15 +93,6 @@ export function UserCard({ user, onEdit, onDelete, onView }: UserCardProps) {
           >
             <Trash2 size={14} />
             Удалить
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="gap-1 text-green-600"
-            onClick={() => onView(user)}
-          >
-            <Eye size={14} />
-            Просмотр
           </Button>
         </div>
       </CardFooter>

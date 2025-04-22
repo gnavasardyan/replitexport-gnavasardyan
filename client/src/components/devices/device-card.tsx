@@ -1,6 +1,5 @@
-
 import { Device } from "@/types/device";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card";
 import { Monitor, Eye, Pencil, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -37,6 +36,15 @@ export function DeviceCard({
           <Button 
             variant="ghost" 
             size="sm" 
+            className="gap-1 text-green-600" 
+            onClick={() => onView(device)}
+          >
+            <Eye size={14} />
+            Просмотр
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm" 
             className="gap-1 text-blue-600" 
             onClick={() => onEdit(device)}
           >
@@ -51,15 +59,6 @@ export function DeviceCard({
           >
             <Trash2 size={14} />
             Удалить
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="gap-1 text-green-600"
-            onClick={() => onView(device)}
-          >
-            <Eye size={14} />
-            Просмотр
           </Button>
         </div>
       </CardFooter>

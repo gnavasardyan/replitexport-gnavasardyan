@@ -43,6 +43,15 @@ export function PartnerCard({
           <Button 
             variant="ghost" 
             size="sm" 
+            className="gap-1 text-green-600" 
+            onClick={() => onView(partner)}
+          >
+            <Eye size={14} />
+            Просмотр
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm" 
             className="gap-1 text-blue-600" 
             onClick={() => onEdit(partner)}
           >
@@ -57,15 +66,6 @@ export function PartnerCard({
           >
             <Trash2 size={14} />
             Удалить
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="gap-1 text-green-600"
-            onClick={() => onView(partner)}
-          >
-            <Eye size={14} />
-            Просмотр
           </Button>
         </div>
       </CardFooter>

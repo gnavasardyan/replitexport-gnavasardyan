@@ -1,4 +1,3 @@
-
 import { Client } from "@/types/client";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Mail, MapPin, Eye, Pencil, Trash2 } from "lucide-react";
@@ -37,6 +36,15 @@ export function ClientCard({
           <Button 
             variant="ghost" 
             size="sm" 
+            className="gap-1 text-green-600" 
+            onClick={() => onView(client)}
+          >
+            <Eye size={14} />
+            Просмотр
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm" 
             className="gap-1 text-blue-600" 
             onClick={() => onEdit(client)}
           >
@@ -51,15 +59,6 @@ export function ClientCard({
           >
             <Trash2 size={14} />
             Удалить
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="gap-1 text-green-600"
-            onClick={() => onView(client)}
-          >
-            <Eye size={14} />
-            Просмотр
           </Button>
         </div>
       </CardFooter>
