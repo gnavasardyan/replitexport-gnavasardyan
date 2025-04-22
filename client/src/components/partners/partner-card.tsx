@@ -80,17 +80,17 @@ export function PartnerCard({
           <Separator />
           
 
-          <div className="flex flex-col items-end mt-4 space-y-2">
+          <div className="flex flex-col items-end mt-4 space-y-3">
              {partner.kpp && (
-              <div className="flex items-center text-sm text-gray-600 px-2 py-1 bg-gray-50 rounded">
-                <span className="mr-2 w-4 h-4 text-gray-400 font-medium">КПП:</span>
-                <span>{partner.kpp}</span>
+              <div className="flex items-center text-sm text-gray-600 px-3 py-2 bg-gray-50 rounded-md shadow-sm">
+                <span className="mr-3 text-gray-400 font-medium">КПП:</span>
+                <span className="font-medium">{partner.kpp}</span>
               </div>
             )}
             {partner.ogrn && (
-              <div className="flex items-center text-sm text-gray-600 px-2 py-1 bg-gray-50 rounded">
-                <span className="mr-2 w-4 h-4 text-gray-400 font-medium">ОГРН:</span>
-                <span>{partner.ogrn}</span>
+              <div className="flex items-center text-sm text-gray-600 px-3 py-2 bg-gray-50 rounded-md shadow-sm">
+                <span className="mr-3 text-gray-400 font-medium">ОГРН:</span>
+                <span className="font-medium">{partner.ogrn}</span>
               </div>
             )}
             {partner.address && (
