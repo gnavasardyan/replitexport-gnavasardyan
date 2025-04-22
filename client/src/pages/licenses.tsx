@@ -190,7 +190,7 @@ export default function Licenses() {
                     const clientName = getClientName(license.client_id);
 
                     return (
-                      <Card key={license.id} className="overflow-hidden">
+                      <Card key={license.license_id} className="overflow-hidden">
                         <CardHeader className="pb-2">
                           <div className="flex justify-between items-start">
                             <CardTitle className="text-xl font-mono">{license.license_key}</CardTitle>
@@ -248,7 +248,7 @@ export default function Licenses() {
                     const clientName = getClientName(license.client_id);
                     return (
                       // Render the same card as in "all" tab
-                      <Card key={license.id} className="overflow-hidden">
+                      <Card key={license.license_id} className="overflow-hidden">
                         {/* Same card content as above */}
                         <CardHeader className="pb-2">
                           <div className="flex justify-between items-start">
@@ -303,7 +303,7 @@ export default function Licenses() {
                     const badgeInfo = getLicenseBadge(license.status);
                     const clientName = getClientName(license.client_id);
                     return (
-                      <Card key={license.id} className="overflow-hidden">
+                      <Card key={license.license_id} className="overflow-hidden">
                         <CardHeader className="pb-2">
                           <div className="flex justify-between items-start">
                             <CardTitle className="text-xl font-mono">{license.license_key}</CardTitle>
@@ -357,7 +357,7 @@ export default function Licenses() {
                     const badgeInfo = getLicenseBadge(license.status);
                     const clientName = getClientName(license.client_id);
                     return (
-                      <Card key={license.id} className="overflow-hidden">
+                      <Card key={license.license_id} className="overflow-hidden">
                         <CardHeader className="pb-2">
                           <div className="flex justify-between items-start">
                             <CardTitle className="text-xl font-mono">{license.license_key}</CardTitle>
