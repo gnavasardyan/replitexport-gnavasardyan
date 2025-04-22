@@ -178,6 +178,15 @@ export default function Updates() {
                 <Button 
                   variant="ghost" 
                   size="sm" 
+                  className="gap-1 text-green-600" 
+                  onClick={() => handleViewUpdate(update)}
+                >
+                  <Eye size={14} />
+                  Просмотр
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
                   className="gap-1 text-blue-600" 
                   onClick={() => handleEditUpdate(update)}
                 >
@@ -192,15 +201,6 @@ export default function Updates() {
                 >
                   <Trash2 size={14} />
                   Удалить
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="gap-1 text-green-600"
-                  onClick={() => handleViewUpdate(update)} // Added view button
-                >
-                  <Eye size={14} />
-                  Просмотр
                 </Button>
               </div>
             </CardFooter>
