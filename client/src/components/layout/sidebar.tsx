@@ -1,16 +1,17 @@
 import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { 
-  Users, 
-  BarChart3, 
-  FolderClosed, 
-  Settings, 
-  Building2, 
-  Key, 
-  Cpu, 
+import {
+  Users,
+  BarChart3,
+  FolderClosed,
+  Settings,
+  Building2,
+  Key,
+  Cpu,
   FileUp,
   UserCircle
 } from "lucide-react";
+import { useState, useContext } from 'react'; // Added imports
 
 interface SidebarItemProps {
   icon: React.ReactNode;
@@ -42,6 +43,27 @@ const SidebarItem = ({ icon, label, href, active }: SidebarItemProps) => {
     </li>
   );
 };
+
+const ThemeContext = React.createContext('light'); // Added ThemeContext
+
+const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
+  const [theme, setTheme] = useState('light');
+  return (
+    <ThemeContext.Provider value={{ theme, setTheme }}>
+      <div className={theme === 'dark' ? 'dark' : ''}> {children} </div>
+    </ThemeContext.Provider>
+  );
+};
+
+const ThemeToggle = () => {
+  const { theme, setTheme } = useContext(ThemeContext);
+  return (
+    <button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
+      {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+    </button>
+  );
+};
+
 
 export function Sidebar() {
   const [location] = useLocation();
@@ -154,6 +176,9 @@ export function Sidebar() {
             </ul>
             </li>
           </ul>
+          <div className="mt-auto p-4">
+            <ThemeToggle />
+          </div>
         </nav>
 
         {/* User Menu */}

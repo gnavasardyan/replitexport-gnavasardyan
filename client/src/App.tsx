@@ -30,9 +30,11 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router />
-      <ApiStatusIndicator />
-      <Toaster />
+      <ThemeProvider defaultTheme="light" attribute="class">
+        <Router />
+        <ApiStatusIndicator />
+        <Toaster />
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

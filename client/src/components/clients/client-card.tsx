@@ -1,4 +1,3 @@
-
 import { Client } from "@/types/client";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Mail, MapPin, Eye, Pencil, Trash2 } from "lucide-react";
@@ -33,30 +32,18 @@ export function ClientCard({
         </div>
       </CardContent>
       <CardFooter className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex justify-between">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onView(client)}
-          className="text-gray-600 hover:text-gray-900"
-        >
-          <Eye className="h-4 w-4" />
+        <Button variant="outline" size="sm" className="gap-1" onClick={() => onView(client)}>
+          <Eye size={14} />
+          Просмотр
         </Button>
         <div className="flex gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onEdit(client)}
-            className="text-gray-600 hover:text-gray-900"
-          >
-            <Pencil className="h-4 w-4" />
+          <Button variant="ghost" size="sm" className="gap-1 text-blue-600" onClick={() => onEdit(client)}>
+            <Pencil size={14} />
+            Изменить
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onDelete(client)}
-            className="text-gray-600 hover:text-red-700"
-          >
-            <Trash2 className="h-4 w-4" />
+          <Button variant="ghost" size="sm" className="gap-1 text-red-600" onClick={() => onDelete(client)}>
+            <Trash2 size={14} />
+            Удалить
           </Button>
         </div>
       </CardFooter>
