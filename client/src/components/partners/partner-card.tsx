@@ -38,17 +38,9 @@ export function PartnerCard({
           <div>ОГРН: {partner.ogrn}</div>
         </div>
       </CardContent>
+      <Separator />
       <CardFooter className="flex justify-end pt-4">
         <div className="flex gap-2">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="gap-1 text-green-600" 
-            onClick={() => onView(partner)}
-          >
-            <Eye size={14} />
-            Просмотр
-          </Button>
           <Button 
             variant="ghost" 
             size="sm" 

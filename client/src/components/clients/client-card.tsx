@@ -31,17 +31,9 @@ export function ClientCard({
           <span>{client.inn}</span>
         </div>
       </CardContent>
+      <Separator />
       <CardFooter className="flex justify-end pt-4">
         <div className="flex gap-2">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="gap-1 text-green-600" 
-            onClick={() => onView(client)}
-          >
-            <Eye size={14} />
-            Просмотр
-          </Button>
           <Button 
             variant="ghost" 
             size="sm" 
