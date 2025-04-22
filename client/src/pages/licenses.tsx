@@ -441,7 +441,7 @@ export default function Licenses() {
                   license={selectedLicense}
                   onSubmit={(data) => {
                     const licenseData = {
-                      id: selectedLicense.id,
+                      id: selectedLicense.license_id,
                       client_id: Number(data.client_id),
                       license_key: data.license_key,
                       status: data.status || "AVAIL"
