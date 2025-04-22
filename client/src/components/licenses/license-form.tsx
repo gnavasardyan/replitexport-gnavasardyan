@@ -117,7 +117,7 @@ export function LicenseForm({ license, onClose, onSuccess }: LicenseFormProps) {
   const updateMutation = useMutation({
     mutationFn: (data: InsertLicense) => {
       if (!license) throw new Error("No license to update");
-      return API.licenses.update(license.id, {
+      return API.licenses.update(license.license_id, {
         client_id: Number(data.client_id),
         license_key: data.license_key,
         status: data.status
