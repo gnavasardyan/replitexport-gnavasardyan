@@ -55,7 +55,7 @@ export function PartnerCard({
   const statusColor = getStatusColor(partner.status || "");
   const typeColor = getTypeColor(partner.type || "");
   return (
-    <Card className="hover:shadow-md transition-shadow duration-300 border border-gray-200 overflow-hidden">
+    <Card className="border border-gray-200 overflow-hidden">
       <CardHeader className="px-6 py-5 border-b border-gray-200 flex items-center">
         <div className="flex items-center gap-4">
           {partner.status && (
