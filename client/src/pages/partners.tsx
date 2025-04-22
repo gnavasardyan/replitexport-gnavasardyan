@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -259,6 +258,24 @@ export default function Partners() {
                   Удалить
                 </Button>
               </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Add Partner Dialog */}
+          <Dialog open={openAddPartner} onOpenChange={setOpenAddPartner}>
+            <DialogContent className="sm:max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Добавить партнера</DialogTitle>
+              </DialogHeader>
+              <PartnerForm
+                onClose={() => {
+                  setOpenAddPartner(false);
+                }}
+                onSuccess={() => {
+                  queryClient.invalidateQueries({ queryKey: ["/api/v1/partners"] });
+                  setOpenAddPartner(false);
+                }}
+              />
             </DialogContent>
           </Dialog>
         </div>
