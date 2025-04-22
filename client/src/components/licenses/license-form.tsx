@@ -41,7 +41,7 @@ export function LicenseForm({ license, onClose, onSuccess }: LicenseFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [clients, setClients] = useState<ClientResponse[]>([]);
   const [originalLicense, setOriginalLicense] = useState<LicenseResponse | null>(null);
-  
+
   useEffect(() => {
     const fetchClients = async () => {
       try {
@@ -56,9 +56,9 @@ export function LicenseForm({ license, onClose, onSuccess }: LicenseFormProps) {
         });
       }
     };
-    
+
     fetchClients();
-    
+
     // Сохраняем исходные данные лицензии
     if (license) {
       setOriginalLicense({...license});
@@ -115,30 +115,11 @@ export function LicenseForm({ license, onClose, onSuccess }: LicenseFormProps) {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: InsertLicense }) => {
-      // Формируем полный объект для PUT-запроса, включая неизмененные поля
-      const putData = {
-        // Сохраняем ID и другие неизменяемые поля из оригинала
-        ...originalLicense,
-        // Обновляем только изменяемые поля
+    mutationFn: ({ id, data }: { id: number; data: Partial<LicenseResponse> }) => {
+      return API.licenses.update(id, {
         client_id: Number(data.client_id),
         license_key: data.license_key,
-        status: data.status,
-        // Обновляем дату изменения
-        updatedAt: new Date().toISOString()
-      };
-      
-      return fetch(`/api/v1/licenses/${id}`, {
-        method: 'PUT',
-        headers: {
-          'accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(putData),
-      })
-      .then(response => {
-        if (!response.ok) throw new Error('Ошибка обновления лицензии');
-        return response.json();
+        status: data.status
       });
     },
     onSuccess: handleSuccess,
@@ -154,7 +135,7 @@ export function LicenseForm({ license, onClose, onSuccess }: LicenseFormProps) {
 
   const onSubmit = (data: InsertLicense) => {
     setIsSubmitting(true);
-    
+
     if (license) {
       updateMutation.mutate({ id: license.id, data });
     } else {
