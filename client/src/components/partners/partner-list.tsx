@@ -29,6 +29,7 @@ export function PartnerList() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
   const [selectedPartner, setSelectedPartner] = useState<Partner | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
