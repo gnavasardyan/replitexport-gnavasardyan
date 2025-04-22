@@ -440,13 +440,17 @@ export default function Licenses() {
                 <LicenseForm
                   license={selectedLicense}
                   onSubmit={(data) => {
+                    if (!selectedLicense) return;
                     const licenseData = {
-                      id: selectedLicense.license_id,
+                      license_id: selectedLicense.license_id,
                       client_id: Number(data.client_id),
                       license_key: data.license_key,
                       status: data.status || "AVAIL"
                     };
-                    updateLicenseMutation.mutate(licenseData);
+                    updateLicenseMutation.mutate({
+                      license_id: selectedLicense.license_id,
+                      ...licenseData
+                    });
                   }}
                   onClose={() => setOpenEditLicense(false)}
                   isLoading={updateLicenseMutation.isPending}
