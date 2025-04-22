@@ -189,6 +189,78 @@ export default function Partners() {
               )}
             </DialogContent>
           </Dialog>
+
+          {/* Edit Partner Dialog */}
+          <Dialog open={openEditPartner} onOpenChange={setOpenEditPartner}>
+            <DialogContent className="sm:max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Изменить партнера</DialogTitle>
+              </DialogHeader>
+              {selectedPartner && (
+                <PartnerForm
+                  partner={selectedPartner}
+                  onClose={() => {
+                    setOpenEditPartner(false);
+                    setSelectedPartner(null);
+                  }}
+                  onSuccess={() => {
+                    queryClient.invalidateQueries({ queryKey: ["/api/v1/partners"] });
+                    setOpenEditPartner(false);
+                    setSelectedPartner(null);
+                  }}
+                />
+              )}
+            </DialogContent>
+          </Dialog>
+
+          {/* Delete Partner Dialog */}
+          <Dialog open={openDeletePartner} onOpenChange={setOpenDeletePartner}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Удалить партнера</DialogTitle>
+              </DialogHeader>
+              <div className="py-4">
+                <p>Вы уверены, что хотите удалить партнера "{selectedPartner?.partner_name}"?</p>
+                <p className="text-sm text-gray-500 mt-2">Это действие нельзя отменить.</p>
+              </div>
+              <div className="flex justify-end gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setOpenDeletePartner(false);
+                    setSelectedPartner(null);
+                  }}
+                >
+                  Отмена
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={async () => {
+                    if (selectedPartner) {
+                      try {
+                        await API.partners.delete(selectedPartner.partner_id);
+                        queryClient.invalidateQueries({ queryKey: ["/api/v1/partners"] });
+                        toast({
+                          title: "Успех",
+                          description: "Партнер успешно удален",
+                        });
+                      } catch (error: any) {
+                        toast({
+                          title: "Ошибка",
+                          description: `Не удалось удалить партнера: ${error.message}`,
+                          variant: "destructive",
+                        });
+                      }
+                      setOpenDeletePartner(false);
+                      setSelectedPartner(null);
+                    }
+                  }}
+                >
+                  Удалить
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </main>
     </div>
