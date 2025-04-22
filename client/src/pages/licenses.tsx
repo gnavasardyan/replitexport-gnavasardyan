@@ -26,6 +26,7 @@ export default function Licenses() {
   const [openEditLicense, setOpenEditLicense] = useState(false);
   const [openDeleteLicense, setOpenDeleteLicense] = useState(false);
   const [selectedLicense, setSelectedLicense] = useState<LicenseResponse | null>(null);
+  const [showViewModal, setShowViewModal] = useState(false); // Added state for view modal
 
   // Fetch licenses and clients
   const { data: licenses, isLoading: isLoadingLicenses, error: licensesError } = useQuery({
@@ -118,11 +119,8 @@ export default function Licenses() {
   };
 
   const handleViewLicense = (license: LicenseResponse) => {
-    const clientName = getClientName(license.client_id);
-    toast({
-      title: "Информация о лицензии",
-      description: `Ключ: ${license.license_key}, Клиент: ${clientName}, Статус: ${license.status || "Не указан"}`,
-    });
+    setSelectedLicense(license); // Set selectedLicense for the dialog
+    setShowViewModal(true);       // Open the view modal
   };
 
   const handleConfirmDelete = () => {
@@ -489,6 +487,40 @@ export default function Licenses() {
                   {deleteLicenseMutation.isPending ? "Удаление..." : "Удалить"}
                 </Button>
               </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* View License Dialog */}
+          <Dialog open={showViewModal} onOpenChange={setShowViewModal}>
+            <DialogContent className="sm:max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Просмотр лицензии</DialogTitle>
+              </DialogHeader>
+              {selectedLicense && (
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium mb-2">Основная информация</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-gray-500">Ключ лицензии</p>
+                        <p className="text-sm font-mono">{selectedLicense.license_key}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Клиент</p>
+                        <p className="text-sm">{getClientName(selectedLicense.client_id)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Статус</p>
+                        <p className="text-sm">{selectedLicense.status}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Дата выдачи</p>
+                        <p className="text-sm">{formatDate(selectedLicense.issuedDate)}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </DialogContent>
           </Dialog>
         </div>

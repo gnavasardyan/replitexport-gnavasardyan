@@ -19,6 +19,7 @@ export default function Devices() {
   const [openEditDevice, setOpenEditDevice] = useState(false);
   const [openDeleteDevice, setOpenDeleteDevice] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<DeviceResponse | null>(null);
+  const [openViewDevice, setOpenViewDevice] = useState(false); // Added state for view dialog
 
   // Fetch devices and clients
   const { data: devices, isLoading: isLoadingDevices, error: devicesError } = useQuery({
@@ -48,17 +49,14 @@ export default function Devices() {
   };
 
   const handleViewDevice = (device: DeviceResponse) => {
-    const clientName = getClientName(device.client_id);
-    toast({
-      title: "Информация об устройстве",
-      description: `ID: ${device.device_id}, Клиент: ${clientName}, Статус: ${device.status || "Не указан"}`,
-    });
+    setSelectedDevice(device);
+    setOpenViewDevice(true); // Open the view dialog
   };
 
   // Get status badge styling based on device status
   const getDeviceBadge = (status: string | undefined) => {
     if (!status) return { variant: "outline" as const, className: "", label: "Нет статуса" };
-    
+
     switch (status.toLowerCase()) {
       case "ready":
         return { variant: "default" as const, className: "bg-green-500", label: "Готово" };
@@ -104,7 +102,7 @@ export default function Devices() {
                   {devices.map((device: DeviceResponse) => {
                     const badgeInfo = getDeviceBadge(device.status);
                     const clientName = getClientName(device.client_id);
-                    
+
                     return (
                       <Card key={device.device_id} className="overflow-hidden">
                         <CardHeader className="pb-2">
@@ -195,6 +193,57 @@ export default function Devices() {
                   Удалить
                 </Button>
               </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* View Device Dialog */}
+          <Dialog open={openViewDevice} onOpenChange={setOpenViewDevice}>
+            <DialogContent className="sm:max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Просмотр устройства</DialogTitle>
+              </DialogHeader>
+              {selectedDevice && (
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium mb-2">Основная информация</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-gray-500">ID устройства</p>
+                        <p className="text-sm">{selectedDevice.device_id}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Клиент</p>
+                        <p className="text-sm">{getClientName(selectedDevice.client_id)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">ID лицензии</p>
+                        <p className="text-sm">{selectedDevice.license_id}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">ID установки</p>
+                        <p className="text-sm">{selectedDevice.inst_id}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-medium mb-2">Техническая информация</h4>
+                    <div className="space-y-2">
+                      <div>
+                        <p className="text-sm text-gray-500">Версия ОС</p>
+                        <p className="text-sm">{selectedDevice.os_version}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">MAC-адрес</p>
+                        <p className="text-sm">{selectedDevice.local_id}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Статус</p>
+                        <p className="text-sm">{selectedDevice.status}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </DialogContent>
           </Dialog>
         </div>

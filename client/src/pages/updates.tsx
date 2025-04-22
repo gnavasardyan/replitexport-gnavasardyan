@@ -24,6 +24,8 @@ export default function Updates() {
     status: "",
     release_notes: ""
   });
+  const [openViewUpdate, setOpenViewUpdate] = useState(false); // Added state for view dialog
+
 
   // Функция для получения обновлений по статусу
   const fetchUpdatesByStatus = (status?: string) => {
@@ -132,6 +134,11 @@ export default function Updates() {
     setOpenDeleteUpdate(true);
   };
 
+  const handleViewUpdate = (update: UpdateResponse) => {
+    setSelectedUpdate(update);
+    setOpenViewUpdate(true);
+  }; // Added handler for view dialog
+
   const handleSubmitEdit = () => {
     if (!selectedUpdate) return;
     updateMutation.mutate({
@@ -214,6 +221,15 @@ export default function Updates() {
                   <Trash2 size={14} />
                   Удалить
                 </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="gap-1 text-green-600"
+                  onClick={() => handleViewUpdate(update)} // Added view button
+                >
+                  <Eye size={14} />
+                  Просмотр
+                </Button>
               </div>
             </CardFooter>
           </Card>
@@ -293,7 +309,7 @@ export default function Updates() {
                 <DialogTitle>Редактирование v{selectedUpdate?.lm_version}</DialogTitle>
                 <DialogDescription>ID: {selectedUpdate?.update_id}</DialogDescription>
               </DialogHeader>
-              
+
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-4 items-center gap-4">
                   <label htmlFor="status" className="text-right">
@@ -326,7 +342,7 @@ export default function Updates() {
                   />
                 </div>
               </div>
-              
+
               <DialogFooter>
                 <Button variant="outline" onClick={() => setOpenEditUpdate(false)}>
                   Отмена
@@ -369,6 +385,50 @@ export default function Updates() {
                   {deleteMutation.isLoading ? "Удаление..." : "Удалить"}
                 </Button>
               </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* View Update Dialog */}
+          <Dialog open={openViewUpdate} onOpenChange={setOpenViewUpdate}>
+            <DialogContent className="sm:max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Просмотр обновления</DialogTitle>
+              </DialogHeader>
+              {selectedUpdate && (
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium mb-2">Основная информация</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-gray-500">Версия</p>
+                        <p className="text-sm">v{selectedUpdate.lm_version}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">ID обновления</p>
+                        <p className="text-sm">{selectedUpdate.update_id}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Статус</p>
+                        <p className="text-sm">{selectedUpdate.status}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Размер</p>
+                        <p className="text-sm">{formatSize(selectedUpdate.size)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Дата релиза</p>
+                        <p className="text-sm">{formatDate(selectedUpdate.release_date)}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-medium mb-2">Примечания к релизу</h4>
+                    <div className="whitespace-pre-line bg-gray-50 dark:bg-gray-900 p-3 rounded text-sm">
+                      {selectedUpdate.release_notes || "Нет примечаний"}
+                    </div>
+                  </div>
+                </div>
+              )}
             </DialogContent>
           </Dialog>
         </div>
