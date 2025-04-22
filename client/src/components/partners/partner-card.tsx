@@ -66,11 +66,8 @@ export function PartnerCard({
           <div className={cn("w-10 h-10 rounded-full flex items-center justify-center", typeColor,)}>
             <span className="font-bold">{initials}</span>
           </div>
-          <div className="flex-1">
+          <div>
             <h3 className="text-lg font-medium text-gray-900">{partner.partner_name}</h3>
-          </div>
-          <div className="text-sm text-gray-500">
-            ИНН: {partner.inn}
           </div>
         </div>
       </CardHeader>
@@ -83,6 +80,10 @@ export function PartnerCard({
           
 
           <div className="flex flex-col mt-4 space-y-3">
+            <div className="flex items-center text-sm text-gray-600 px-3 py-2 bg-gray-50/50 rounded-md">
+              <span className="mr-3 text-gray-400 font-medium">ИНН:</span>
+              <span className="font-medium">{partner.inn}</span>
+            </div>
              {partner.kpp && (
               <div className="flex items-center text-sm text-gray-600 px-3 py-2 bg-gray-50/50 rounded-md">
                 <span className="mr-3 text-gray-400 font-medium">КПП:</span>
