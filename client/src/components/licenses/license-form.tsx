@@ -147,13 +147,6 @@ export function LicenseForm({ license, onClose, onSuccess }: LicenseFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        {/* Показываем ID лицензии при редактировании */}
-        {license && (
-          <div className="text-sm text-gray-500">
-            ID лицензии: {license.id}
-          </div>
-        )}
-
         <FormField
           control={form.control}
           name="client_id"
@@ -232,15 +225,6 @@ export function LicenseForm({ license, onClose, onSuccess }: LicenseFormProps) {
             </FormItem>
           )}
         />
-
-        {/* Показываем исходные данные при редактировании */}
-        {license && originalLicense && (
-          <div className="text-sm text-gray-500 space-y-1">
-            <div>Исходный клиент: {clients.find(c => c.client_id === originalLicense.client_id)?.client_name || originalLicense.client_id}</div>
-            <div>Исходный ключ: {originalLicense.license_key}</div>
-            <div>Исходный статус: {originalLicense.status}</div>
-          </div>
-        )}
 
         <div className="flex justify-end gap-2 mt-6">
           <Button
