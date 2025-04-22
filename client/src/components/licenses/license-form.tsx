@@ -115,8 +115,9 @@ export function LicenseForm({ license, onClose, onSuccess }: LicenseFormProps) {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<LicenseResponse> }) => {
-      return API.licenses.update(id, {
+    mutationFn: (data: InsertLicense) => {
+      if (!license) throw new Error("No license to update");
+      return API.licenses.update(license.id, {
         client_id: Number(data.client_id),
         license_key: data.license_key,
         status: data.status
@@ -135,9 +136,9 @@ export function LicenseForm({ license, onClose, onSuccess }: LicenseFormProps) {
 
   const onSubmit = (data: InsertLicense) => {
     setIsSubmitting(true);
-
+    
     if (license) {
-      updateMutation.mutate({ id: license.id, data });
+      updateMutation.mutate(data);
     } else {
       createMutation.mutate(data);
     }
