@@ -204,6 +204,7 @@ export default function Licenses() {
                         </CardHeader>
                         <CardContent className="pb-2">
                           <div className="space-y-2 text-sm">
+                            <p><span className="font-medium">ID:</span> {license.license_id}</p>
                             <p><span className="font-medium">Клиент:</span> {clientName}</p>
                             <p><span className="font-medium">Дата выдачи:</span> {formatDate(license.issuedDate)}</p>
                           </div>
@@ -260,6 +261,7 @@ export default function Licenses() {
                         </CardHeader>
                         <CardContent className="pb-2">
                           <div className="space-y-2 text-sm">
+                            <p><span className="font-medium">ID:</span> {license.license_id}</p>
                             <p><span className="font-medium">Клиент:</span> {clientName}</p>
                             <p><span className="font-medium">Дата выдачи:</span> {formatDate(license.issuedDate)}</p>
                           </div>
@@ -314,6 +316,7 @@ export default function Licenses() {
                         </CardHeader>
                         <CardContent className="pb-2">
                           <div className="space-y-2 text-sm">
+                            <p><span className="font-medium">ID:</span> {license.license_id}</p>
                             <p><span className="font-medium">Клиент:</span> {clientName}</p>
                             <p><span className="font-medium">Дата выдачи:</span> {formatDate(license.issuedDate)}</p>
                           </div>
@@ -368,6 +371,7 @@ export default function Licenses() {
                         </CardHeader>
                         <CardContent className="pb-2">
                           <div className="space-y-2 text-sm">
+                            <p><span className="font-medium">ID:</span> {license.license_id}</p>
                             <p><span className="font-medium">Клиент:</span> {clientName}</p>
                             <p><span className="font-medium">Дата выдачи:</span> {formatDate(license.issuedDate)}</p>
                           </div>
