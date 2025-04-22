@@ -66,9 +66,11 @@ export function PartnerCard({
           <div className={cn("w-10 h-10 rounded-full flex items-center justify-center", typeColor,)}>
             <span className="font-bold">{initials}</span>
           </div>
-          <div>
+          <div className="flex-1">
             <h3 className="text-lg font-medium text-gray-900">{partner.partner_name}</h3>
-            <p className="text-sm text-gray-500">{partner.inn}</p>
+          </div>
+          <div className="text-sm text-gray-500">
+            ИНН: {partner.inn}
           </div>
         </div>
       </CardHeader>
