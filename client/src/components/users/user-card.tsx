@@ -63,21 +63,36 @@ export function UserCard({ user, onEdit, onDelete, onView }: UserCardProps) {
           )}
         </div>
       </CardContent>
-      <CardFooter className="pt-2 flex justify-between">
-        <div className="flex space-x-2">
-          <Button variant="outline" size="sm" onClick={() => onView(user)}>
-            <Eye className="h-4 w-4 mr-1" />
-            Детали
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => onEdit(user)}>
-            <Edit className="h-4 w-4 mr-1" />
+      <CardFooter className="flex justify-end pt-4">
+        <div className="flex gap-2">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="gap-1 text-blue-600" 
+            onClick={() => onEdit(user)}
+          >
+            <Pencil size={14} />
             Изменить
           </Button>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="gap-1 text-red-600" 
+            onClick={() => onDelete(user)}
+          >
+            <Trash2 size={14} />
+            Удалить
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-1 text-green-600"
+            onClick={() => onView(user)}
+          >
+            <Eye size={14} />
+            Просмотр
+          </Button>
         </div>
-        <Button variant="destructive" size="sm" onClick={() => onDelete(user)}>
-          <Trash2 className="h-4 w-4 mr-1" />
-          Удалить
-        </Button>
       </CardFooter>
     </Card>
   );
