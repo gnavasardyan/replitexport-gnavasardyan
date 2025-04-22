@@ -61,7 +61,7 @@ export default function Licenses() {
   });
 
   const updateLicenseMutation = useMutation({
-    mutationFn: (data: LicenseResponse) => API.licenses.update(data),
+    mutationFn: ({ id, data }: { id: number, data: Partial<LicenseResponse> }) => API.licenses.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["licenses"] });
       toast({
@@ -442,14 +442,13 @@ export default function Licenses() {
                   onSubmit={(data) => {
                     if (!selectedLicense) return;
                     const licenseData = {
-                      license_id: selectedLicense.license_id,
                       client_id: Number(data.client_id),
                       license_key: data.license_key,
                       status: data.status || "AVAIL"
                     };
                     updateLicenseMutation.mutate({
-                      license_id: selectedLicense.license_id,
-                      ...licenseData
+                      id: selectedLicense.license_id,
+                      data: licenseData
                     });
                   }}
                   onClose={() => setOpenEditLicense(false)}
