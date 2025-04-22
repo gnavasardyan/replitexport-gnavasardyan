@@ -28,6 +28,8 @@ export default function Clients() {
   const [openDeleteClient, setOpenDeleteClient] = useState(false);
   const [selectedClient, setSelectedClient] = useState<ClientResponse | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showViewModal, setShowViewModal] = useState(false);
+
 
   // Fetch clients
   const { data: clients, isLoading, error } = useQuery({
@@ -67,12 +69,15 @@ export default function Clients() {
   };
 
   const handleViewClient = (client: ClientResponse) => {
-    toast({
-      title: "Информация о клиенте", 
-      description: `${client.client_name} (ИНН: ${client.inn})`,
-    });
+    setSelectedClient(client);
+    setShowViewModal(true);
   };
-  
+
+  const handleCloseViewModal = () => {
+    setShowViewModal(false);
+    setSelectedClient(null);
+  };
+
   // Удаление клиента
   const deleteMutation = useMutation({
     mutationFn: (id: number) => API.clients.delete(id),
@@ -250,6 +255,47 @@ export default function Clients() {
               }}
             />
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* View Client Dialog */}
+      <Dialog open={showViewModal} onOpenChange={setShowViewModal}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Просмотр клиента</DialogTitle>
+          </DialogHeader>
+          {selectedClient && (
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-medium mb-2">Основная информация</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-500">Наименование</p>
+                    <p className="text-sm">{selectedClient.client_name}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">ИНН</p>
+                    <p className="text-sm">{selectedClient.inn}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Тип</p>
+                    <p className="text-sm">{selectedClient.type}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">ID партнера</p>
+                    <p className="text-sm">{selectedClient.partner_id}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Дата создания</p>
+                    <p className="text-sm">{formatDate(selectedClient.createdAt)}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button onClick={handleCloseViewModal} variant="outline">Закрыть</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
