@@ -29,20 +29,18 @@ export default function Updates() {
 
 
   // Функция для получения обновлений по статусу
-  const fetchUpdatesByStatus = (status?: string) => {
-    return status 
-      ? API.updates.getByStatus(status)
-      : API.updates.getAll();
-  };
-
-  // Запросы данных
   const { 
     data: updates, 
     isLoading, 
     error 
   } = useQuery({
-    queryKey: ["updates", selectedStatus],
-    queryFn: () => fetchUpdatesByStatus(selectedStatus === "all" ? undefined : selectedStatus),
+    queryKey: ["updates"],
+    queryFn: API.updates.getAll
+  });
+
+  const filteredUpdates = updates?.filter(update => {
+    if (selectedStatus === "all") return true;
+    return update.status === selectedStatus.toUpperCase();
   });
 
   // Мутация для обновления
@@ -235,7 +233,7 @@ export default function Updates() {
               ) : error ? (
                 <div className="text-center py-8 text-red-500">Ошибка загрузки данных</div>
               ) : (
-                renderUpdateCards(updates)
+                renderUpdateCards(filteredUpdates)
               )}
             </TabsContent>
 

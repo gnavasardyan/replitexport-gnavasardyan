@@ -8,7 +8,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { API } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PartnerResponse } from "@shared/schema";
 import { PartnerForm } from "@/components/partners/partner-form";
 import { Sidebar } from "@/components/layout/sidebar";
@@ -47,21 +47,16 @@ export default function Partners() {
     setShowViewModal(true);
   };
 
-  const handleCloseViewModal = () => {
-    setShowViewModal(false);
-    setSelectedPartner(null);
+  const formatDate = (dateString: string | Date | undefined) => {
+    if (!dateString) return "Не указано";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("ru-RU");
   };
 
   const filteredPartners = partners?.filter(partner => 
     partner.partner_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     partner.inn.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const formatDate = (dateString: string | Date | undefined) => {
-    if (!dateString) return "Не указано";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("ru-RU");
-  };
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
@@ -147,6 +142,53 @@ export default function Partners() {
               </div>
             )}
           </div>
+
+          {/* View Partner Dialog */}
+          <Dialog open={showViewModal} onOpenChange={setShowViewModal}>
+            <DialogContent className="sm:max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Просмотр партнера</DialogTitle>
+              </DialogHeader>
+              {selectedPartner && (
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium mb-2">Основная информация</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-gray-500">Наименование</p>
+                        <p className="text-sm">{selectedPartner.partner_name}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">ИНН</p>
+                        <p className="text-sm">{selectedPartner.inn}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">КПП</p>
+                        <p className="text-sm">{selectedPartner.kpp}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">ОГРН</p>
+                        <p className="text-sm">{selectedPartner.ogrn}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-medium mb-2">Контактная информация</h4>
+                    <div className="space-y-2">
+                      <div>
+                        <p className="text-sm text-gray-500">Email</p>
+                        <p className="text-sm">{selectedPartner.email}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Адрес</p>
+                        <p className="text-sm">{selectedPartner.address}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
         </div>
       </main>
     </div>
