@@ -149,6 +149,53 @@ export function PartnerList() {
         </div>
       </div>
 
+      {/* Модальное окно просмотра */}
+      <Dialog open={showViewModal} onOpenChange={setShowViewModal}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Просмотр партнера</DialogTitle>
+          </DialogHeader>
+          {selectedPartner && (
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-medium mb-2">Основная информация</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-500">Наименование</p>
+                    <p className="text-sm">{selectedPartner.partner_name}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">ИНН</p>
+                    <p className="text-sm">{selectedPartner.inn}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">КПП</p>
+                    <p className="text-sm">{selectedPartner.kpp}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">ОГРН</p>
+                    <p className="text-sm">{selectedPartner.ogrn}</p>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <h4 className="font-medium mb-2">Контактная информация</h4>
+                <div className="space-y-2">
+                  <div>
+                    <p className="text-sm text-gray-500">Email</p>
+                    <p className="text-sm">{selectedPartner.email}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Адрес</p>
+                    <p className="text-sm">{selectedPartner.address}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Сетка партнеров */}
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
