@@ -135,7 +135,7 @@ export function PartnerList() {
       {/* Actions */}
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-end gap-4">
         <div className="flex items-center gap-2">        
-         
+
           <div className="flex border rounded-md overflow-hidden">
             <Button variant="ghost" size="sm" className="rounded-none border-r"
             >
@@ -247,7 +247,7 @@ export function PartnerList() {
         </div>
 
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"> {/*This line is updated*/}
           {filteredPartners.map((partner: Partner) => (
             <PartnerCard
               key={partner.id}
