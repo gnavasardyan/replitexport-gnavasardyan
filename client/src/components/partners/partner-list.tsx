@@ -40,12 +40,11 @@ export function PartnerList() {
   });
 
   const filteredPartners = partners ? partners.filter((partner: any) => {
-    const matchesSearch = !searchQuery ||
-      partner.partner_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      partner.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      partner.inn.toLowerCase().includes(searchQuery.toLowerCase());
-        
-    return matchesSearch;
+    const searchLower = searchQuery.toLowerCase();
+    return !searchQuery || 
+      partner.partner_name.toLowerCase().includes(searchLower) ||
+      partner.email.toLowerCase().includes(searchLower) ||
+      partner.inn.toLowerCase().includes(searchLower);
   }) : [];
 
   const handleViewPartner = (partner: Partner) => {
@@ -88,7 +87,7 @@ export function PartnerList() {
               <div className="relative">
                 <Input
                   type="text"                  
-                  placeholder="Поиск партнеров..."
+                  placeholder="Поиск партнеров по названию или ИНН..."
                   className="w-full md:w-64 pl-10"                
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
