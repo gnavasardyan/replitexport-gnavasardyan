@@ -1,8 +1,9 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Pencil, Trash2, Eye } from "lucide-react";
+import { Trash2, Eye } from "lucide-react";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { API } from "@/lib/api";
@@ -10,18 +11,17 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DeviceResponse, ClientResponse } from "@shared/schema";
-
+import { Input } from "@/components/ui/input";
 import { Sidebar } from "@/components/layout/sidebar";
 
 export default function Devices() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [openEditDevice, setOpenEditDevice] = useState(false);
   const [openDeleteDevice, setOpenDeleteDevice] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<DeviceResponse | null>(null);
-  const [openViewDevice, setOpenViewDevice] = useState(false); // Added state for view dialog
+  const [openViewDevice, setOpenViewDevice] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // Fetch devices and clients
   const { data: devices, isLoading: isLoadingDevices, error: devicesError } = useQuery({
     queryKey: ["/api/v1/devices"],
     queryFn: API.devices.getAll,
@@ -38,11 +38,6 @@ export default function Devices() {
     return client ? client.client_name : clientId.toString();
   };
 
-  const handleEditDevice = (device: DeviceResponse) => {
-    setSelectedDevice(device);
-    setOpenEditDevice(true);
-  };
-
   const handleDeleteDevice = (device: DeviceResponse) => {
     setSelectedDevice(device);
     setOpenDeleteDevice(true);
@@ -50,10 +45,9 @@ export default function Devices() {
 
   const handleViewDevice = (device: DeviceResponse) => {
     setSelectedDevice(device);
-    setOpenViewDevice(true); // Open the view dialog
+    setOpenViewDevice(true);
   };
 
-  // Get status badge styling based on device status
   const getDeviceBadge = (status: string | undefined) => {
     if (!status) return { variant: "outline" as const, className: "", label: "Нет статуса" };
 
@@ -71,6 +65,11 @@ export default function Devices() {
     }
   };
 
+  const filteredDevices = devices?.filter(device => {
+    const clientName = getClientName(device.client_id).toLowerCase();
+    return clientName.includes(searchQuery.toLowerCase());
+  });
+
   const isLoading = isLoadingDevices || isLoadingClients;
   const error = devicesError || clientsError;
 
@@ -81,6 +80,16 @@ export default function Devices() {
         <div className="container mx-auto p-4">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold">Устройства</h1>
+          </div>
+
+          <div className="mb-6">
+            <Input
+              type="text"
+              placeholder="Поиск по имени клиента..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="max-w-sm"
+            />
           </div>
 
           <Tabs defaultValue="all">
@@ -95,11 +104,11 @@ export default function Devices() {
                 <div className="text-center py-8">Загрузка данных...</div>
               ) : error ? (
                 <div className="text-center py-8 text-red-500">Ошибка загрузки данных</div>
-              ) : !devices || devices.length === 0 ? (
+              ) : !filteredDevices || filteredDevices.length === 0 ? (
                 <div className="text-center py-8">Нет данных об устройствах</div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {devices.map((device: DeviceResponse) => {
+                  {filteredDevices.map((device: DeviceResponse) => {
                     const badgeInfo = getDeviceBadge(device.status);
                     const clientName = getClientName(device.client_id);
 
@@ -134,16 +143,10 @@ export default function Devices() {
                             <Eye size={14} />
                             Просмотр
                           </Button>
-                          <div className="flex gap-2">
-                            <Button variant="ghost" size="sm" className="gap-1 text-blue-600" onClick={() => handleEditDevice(device)}>
-                              <Pencil size={14} />
-                              Изменить
-                            </Button>
-                            <Button variant="ghost" size="sm" className="gap-1 text-red-600" onClick={() => handleDeleteDevice(device)}>
-                              <Trash2 size={14} />
-                              Удалить
-                            </Button>
-                          </div>
+                          <Button variant="ghost" size="sm" className="gap-1 text-red-600" onClick={() => handleDeleteDevice(device)}>
+                            <Trash2 size={14} />
+                            Удалить
+                          </Button>
                         </CardFooter>
                       </Card>
                     );
@@ -161,19 +164,7 @@ export default function Devices() {
             </TabsContent>
           </Tabs>
 
-          {/* Edit Device Dialog - Placeholder for now */}
-          <Dialog open={openEditDevice} onOpenChange={setOpenEditDevice}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Изменить данные устройства</DialogTitle>
-              </DialogHeader>
-              <div className="py-4">
-                <p>Форма для редактирования устройства - находится в разработке</p>
-              </div>
-            </DialogContent>
-          </Dialog>
-
-          {/* Delete Device Dialog - Placeholder for now */}
+          {/* Delete Device Dialog */}
           <Dialog open={openDeleteDevice} onOpenChange={setOpenDeleteDevice}>
             <DialogContent>
               <DialogHeader>
