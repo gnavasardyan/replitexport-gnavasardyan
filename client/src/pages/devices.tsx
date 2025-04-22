@@ -92,14 +92,7 @@ export default function Devices() {
             />
           </div>
 
-          <Tabs defaultValue="all">
-            <TabsList className="mb-4">
-              <TabsTrigger value="all">Все устройства</TabsTrigger>
-              <TabsTrigger value="ready">Готовые</TabsTrigger>
-              <TabsTrigger value="not_configured">Не настроенные</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="all" className="space-y-4">
+          <div className="space-y-4">
               {isLoading ? (
                 <div className="text-center py-8">Загрузка данных...</div>
               ) : error ? (
@@ -153,16 +146,7 @@ export default function Devices() {
                   })}
                 </div>
               )}
-            </TabsContent>
-
-            <TabsContent value="ready">
-              <div className="text-center py-8">Функциональность находится в разработке</div>
-            </TabsContent>
-
-            <TabsContent value="not_configured">
-              <div className="text-center py-8">Функциональность находится в разработке</div>
-            </TabsContent>
-          </Tabs>
+            </div>
 
           {/* Delete Device Dialog */}
           <Dialog open={openDeleteDevice} onOpenChange={setOpenDeleteDevice}>
