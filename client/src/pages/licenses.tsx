@@ -18,6 +18,8 @@ import {
 import { LicenseResponse, ClientResponse } from "@shared/schema";
 import { LicenseForm } from "@/components/licenses/license-form";
 import { Sidebar } from "@/components/layout/sidebar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; //Import Select component
+
 
 export default function Licenses() {
   const { toast } = useToast();
@@ -27,6 +29,7 @@ export default function Licenses() {
   const [openDeleteLicense, setOpenDeleteLicense] = useState(false);
   const [selectedLicense, setSelectedLicense] = useState<LicenseResponse | null>(null);
   const [showViewModal, setShowViewModal] = useState(false); // Added state for view modal
+  const [searchQuery, setSearchQuery] = useState(''); // Added state for search query
 
   // Fetch licenses and clients
   const { data: licenses, isLoading: isLoadingLicenses, error: licensesError } = useQuery({
@@ -153,6 +156,14 @@ export default function Licenses() {
   const isLoading = isLoadingLicenses || isLoadingClients;
   const error = licensesError || clientsError;
 
+  const filteredLicenses = searchQuery
+    ? licenses?.filter((license) => {
+      const client = clients?.find((c) => c.client_id === license.client_id);
+      return client?.client_name.toLowerCase().includes(searchQuery.toLowerCase());
+    })
+    : licenses;
+
+
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       <Sidebar />
@@ -164,6 +175,21 @@ export default function Licenses() {
               <Plus size={16} />
               Добавить лицензию
             </Button>
+          </div>
+
+          <div className="mb-6">
+            <Select onValueChange={(value) => setSearchQuery(value)}>
+              <SelectTrigger className="w-[280px]">
+                <SelectValue placeholder="Выберите клиента..." />
+              </SelectTrigger>
+              <SelectContent>
+                {clients?.map((client: ClientResponse) => (
+                  <SelectItem key={client.client_id} value={client.client_name}>
+                    {client.client_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <Tabs defaultValue="all">
@@ -181,11 +207,11 @@ export default function Licenses() {
                 <div className="text-center py-8 text-red-500">
                   Ошибка загрузки данных: {error.message}
                 </div>
-              ) : !licenses || licenses.length === 0 ? (
+              ) : !filteredLicenses || filteredLicenses.length === 0 ? (
                 <div className="text-center py-8">Нет данных о лицензиях</div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {licenses.map((license: LicenseResponse) => {
+                  {filteredLicenses.map((license: LicenseResponse) => {
                     const badgeInfo = getLicenseBadge(license.status);
                     const clientName = getClientName(license.client_id);
 
@@ -240,11 +266,11 @@ export default function Licenses() {
                 <div className="text-center py-8 text-red-500">
                   Ошибка загрузки данных: {error.message}
                 </div>
-              ) : !licenses || licenses.length === 0 ? (
+              ) : !filteredLicenses || filteredLicenses.length === 0 ? (
                 <div className="text-center py-8">Нет доступных лицензий</div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {licenses.filter(license => license.status === "AVAIL").map((license) => {
+                  {filteredLicenses.filter(license => license.status === "AVAIL").map((license) => {
                     const badgeInfo = getLicenseBadge(license.status);
                     const clientName = getClientName(license.client_id);
                     return (
@@ -297,11 +323,11 @@ export default function Licenses() {
                 <div className="text-center py-8 text-red-500">
                   Ошибка загрузки данных: {error.message}
                 </div>
-              ) : !licenses || licenses.length === 0 ? (
+              ) : !filteredLicenses || filteredLicenses.length === 0 ? (
                 <div className="text-center py-8">Нет используемых лицензий</div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {licenses.filter(license => license.status === "USED").map((license) => {
+                  {filteredLicenses.filter(license => license.status === "USED").map((license) => {
                     const badgeInfo = getLicenseBadge(license.status);
                     const clientName = getClientName(license.client_id);
                     return (
@@ -352,11 +378,11 @@ export default function Licenses() {
                 <div className="text-center py-8 text-red-500">
                   Ошибка загрузки данных: {error.message}
                 </div>
-              ) : !licenses || licenses.length === 0 ? (
+              ) : !filteredLicenses || filteredLicenses.length === 0 ? (
                 <div className="text-center py-8">Нет заблокированных лицензий</div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {licenses.filter(license => license.status === "BLOCKED").map((license) => {
+                  {filteredLicenses.filter(license => license.status === "BLOCKED").map((license) => {
                     const badgeInfo = getLicenseBadge(license.status);
                     const clientName = getClientName(license.client_id);
                     return (

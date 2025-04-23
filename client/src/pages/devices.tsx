@@ -21,6 +21,7 @@ export default function Devices() {
   const [selectedDevice, setSelectedDevice] = useState<DeviceResponse | null>(null);
   const [openViewDevice, setOpenViewDevice] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
 
   const { data: devices, isLoading: isLoadingDevices, error: devicesError } = useQuery({
     queryKey: ["/api/v1/devices"],
@@ -66,8 +67,9 @@ export default function Devices() {
   };
 
   const filteredDevices = devices?.filter(device => {
-    const clientName = getClientName(device.client_id).toLowerCase();
-    return clientName.includes(searchQuery.toLowerCase());
+    const matchesClient = !searchQuery || device.client_id.toString() === searchQuery;
+    const matchesStatus = !statusFilter || device.status?.toLowerCase() === statusFilter.toLowerCase();
+    return matchesClient && matchesStatus;
   });
 
   const isLoading = isLoadingDevices || isLoadingClients;
@@ -82,14 +84,33 @@ export default function Devices() {
             <h1 className="text-3xl font-bold">Устройства</h1>
           </div>
 
-          <div className="mb-6">
-            <Input
-              type="text"
-              placeholder="Поиск по имени клиента..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="max-w-sm"
-            />
+          <div className="mb-6 space-y-4">
+            <div className="flex gap-4">
+              <Select onValueChange={(value) => setSearchQuery(value)}>
+                <SelectTrigger className="w-[280px]">
+                  <SelectValue placeholder="Выберите клиента..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {clients?.map((client: ClientResponse) => (
+                    <SelectItem key={client.client_id} value={client.client_id.toString()}>
+                      {client.client_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select onValueChange={(value) => setStatusFilter(value)}>
+                <SelectTrigger className="w-[280px]">
+                  <SelectValue placeholder="Фильтр по статусу..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ready">Готово</SelectItem>
+                  <SelectItem value="not_configured">Не настроено</SelectItem>
+                  <SelectItem value="initialization">Инициализация</SelectItem>
+                  <SelectItem value="sync_error">Ошибка синхронизации</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="space-y-4">
