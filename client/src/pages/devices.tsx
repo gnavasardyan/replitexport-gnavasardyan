@@ -15,13 +15,6 @@ import { Input } from "@/components/ui/input";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import React from "react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 export default function Devices() {
   const { toast } = useToast();
