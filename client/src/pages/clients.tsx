@@ -28,6 +28,7 @@ export default function Clients() {
   const [openDeleteClient, setOpenDeleteClient] = useState(false);
   const [selectedClient, setSelectedClient] = useState<ClientResponse | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [partnerFilter, setPartnerFilter] = useState(""); // Added partner filter state
   const [showViewModal, setShowViewModal] = useState(false);
   const [page, setPage] = useState(1);
   const itemsPerPage = 10;
@@ -113,10 +114,11 @@ export default function Clients() {
     return date.toLocaleDateString("ru-RU");
   };
 
-  // Фильтрация клиентов по поисковому запросу (имя или ИНН)
+  // Фильтрация клиентов по поисковому запросу (имя или ИНН) и партнеру
   const filteredClients = clients?.filter(client => 
     client.client_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    client.inn.toLowerCase().includes(searchQuery.toLowerCase())
+    client.inn.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (partnerFilter && findPartnerById(client.partner_id)?.partner_name.toLowerCase().includes(partnerFilter.toLowerCase()))
   );
 
   const startIndex = (page - 1) * itemsPerPage;
@@ -154,6 +156,21 @@ export default function Clients() {
             {searchQuery && <X size={16} />}
           </button>
         </div>
+        <div className="relative mt-4"> {/* Added partner filter input */}
+          <input
+            type="text"
+            placeholder="Фильтр по имени партнера..."
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            value={partnerFilter}
+            onChange={(e) => setPartnerFilter(e.target.value)}
+          />
+          <button
+            className="absolute right-3 top-2 text-gray-500 hover:text-gray-700"
+            onClick={() => setPartnerFilter("")}
+          >
+            {partnerFilter && <X size={16} />}
+          </button>
+        </div>
       </div>
 
       <div className="space-y-4">
@@ -163,7 +180,7 @@ export default function Clients() {
           <div className="text-center py-8 text-red-500">Ошибка загрузки данных</div>
         ) : !paginatedClients || paginatedClients.length === 0 ? (
           <div className="text-center py-8">
-            {searchQuery ? "Нет результатов по вашему запросу" : "Нет данных о клиентах"}
+            {searchQuery || partnerFilter ? "Нет результатов по вашему запросу" : "Нет данных о клиентах"}
           </div>
         ) : (
           <>
