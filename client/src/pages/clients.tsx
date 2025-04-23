@@ -31,8 +31,8 @@ export default function Clients() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedPartnerId, setSelectedPartnerId] = useState("");
-  //const [currentPage, setCurrentPage] = useState(1); // Removed
-  //const itemsPerPage = 10; // Removed
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
 
   // Fetch clients
@@ -121,7 +121,7 @@ export default function Clients() {
     client.inn.toLowerCase().includes(searchQuery.toLowerCase())
   ).filter(client => !selectedPartnerId || client.partner_id === parseInt(selectedPartnerId));
 
-  //const paginatedClients = filteredClients?.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage); // Removed
+  const paginatedClients = filteredClients?.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
@@ -175,14 +175,14 @@ export default function Clients() {
           <div className="text-center py-8">Загрузка клиентов...</div>
         ) : error ? (
           <div className="text-center py-8 text-red-500">Ошибка загрузки данных</div>
-        ) : !filteredClients || filteredClients.length === 0 ? (
+        ) : !paginatedClients || paginatedClients.length === 0 ? (
           <div className="text-center py-8">
             {searchQuery || selectedPartnerId ? "Нет результатов по вашему запросу" : "Нет данных о клиентах"}
           </div>
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredClients.map((client: ClientResponse) => ( // changed paginatedClients to filteredClients
+              {paginatedClients.map((client: ClientResponse) => (
                 <Card key={client.client_id} className="overflow-hidden">
                   <CardHeader className="pb-2">
                     <div className="flex justify-between items-start">
@@ -229,7 +229,11 @@ export default function Clients() {
                 </Card>
               ))}
             </div>
-            {/* Removed pagination buttons */}
+            <div className="flex justify-center mt-4">
+              <Button onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))} disabled={currentPage === 1}>Prev</Button>
+              <span className="mx-2">{currentPage}</span>
+              <Button onClick={() => setCurrentPage(prev => prev + 1)} disabled={!filteredClients || paginatedClients.length < itemsPerPage}>Next</Button>
+            </div>
           </>
         )}
       </div>
