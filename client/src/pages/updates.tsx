@@ -220,7 +220,10 @@ export default function Updates() {
             <h1 className="text-3xl font-bold">Обновления</h1>
           </div>
 
-          <Tabs defaultValue="all" onValueChange={(value) => setSelectedStatus(value === "all" ? "" : value.toUpperCase())}>
+          <Tabs defaultValue="all" onValueChange={(value) => {
+            setSelectedStatus(value === "all" ? "" : value.toUpperCase());
+            setPage(1); // Reset page when changing tabs
+          }}>
             <TabsList className="mb-4">
               <TabsTrigger value="all">Все</TabsTrigger>
               <TabsTrigger value="active">ACTIVE</TabsTrigger>
