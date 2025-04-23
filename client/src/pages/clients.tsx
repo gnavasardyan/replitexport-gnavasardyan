@@ -219,12 +219,18 @@ export default function Clients() {
                 Предыдущая
               </Button>
               <span className="mx-2">
-                Страница {page} из {Math.ceil(filteredClients?.length / 10) || 1}
+                Страница {page} из {Math.ceil(filteredClients?.length / 10)}
               </span>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setPage(p => Math.min(Math.ceil(filteredClients?.length / 10), p + 1))}
+                onClick={() => setPage(p => Math.min(Math.ceil(filteredClients.length / 10), p + 1))}
+                disabled={page >= Math.ceil(filteredClients.length / 10)}
+              >
+                Следующая
+              </Button>
+            </div>
+          </div> p + 1))}
                 disabled={page >= Math.ceil(filteredClients?.length / 10)}
               >
                 Следующая
