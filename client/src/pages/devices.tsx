@@ -23,6 +23,7 @@ export default function Devices() {
   const [openViewDevice, setOpenViewDevice] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [page, setPage] = useState(1);
 
   const { data: devices, isLoading: isLoadingDevices, error: devicesError } = useQuery({
     queryKey: ["/api/v1/devices"],
@@ -122,8 +123,9 @@ export default function Devices() {
               ) : !filteredDevices || filteredDevices.length === 0 ? (
                 <div className="text-center py-8">Нет данных об устройствах</div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {filteredDevices.map((device: DeviceResponse) => {
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {filteredDevices.slice((page - 1) * 10, page * 10).map((device: DeviceResponse) => {
                     const badgeInfo = getDeviceBadge(device.status);
                     const clientName = getClientName(device.client_id);
 
@@ -167,6 +169,30 @@ export default function Devices() {
                     );
                   })}
                 </div>
+                  <div className="mt-4 flex justify-center">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                      >
+                        Предыдущая
+                      </Button>
+                      <span className="mx-2">
+                        Страница {page} из {Math.ceil(filteredDevices.length / 10)}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage(p => Math.min(Math.ceil(filteredDevices.length / 10), p + 1))}
+                        disabled={page >= Math.ceil(filteredDevices.length / 10)}
+                      >
+                        Следующая
+                      </Button>
+                    </div>
+                  </div>
+                </>
               )}
             </div>
 

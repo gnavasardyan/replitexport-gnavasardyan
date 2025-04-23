@@ -30,6 +30,7 @@ export default function Licenses() {
   const [selectedLicense, setSelectedLicense] = useState<LicenseResponse | null>(null);
   const [showViewModal, setShowViewModal] = useState(false); // Added state for view modal
   const [searchQuery, setSearchQuery] = useState(''); // Added state for search query
+  const [page, setPage] = useState(1); // Added state for pagination
 
   // Fetch licenses and clients
   const { data: licenses, isLoading: isLoadingLicenses, error: licensesError } = useQuery({
@@ -210,52 +211,77 @@ export default function Licenses() {
               ) : !filteredLicenses || filteredLicenses.length === 0 ? (
                 <div className="text-center py-8">Нет данных о лицензиях</div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {filteredLicenses.map((license: LicenseResponse) => {
-                    const badgeInfo = getLicenseBadge(license.status);
-                    const clientName = getClientName(license.client_id);
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {filteredLicenses.slice((page - 1) * 10, page * 10).map((license: LicenseResponse) => {
+                      const badgeInfo = getLicenseBadge(license.status);
+                      const clientName = getClientName(license.client_id);
 
-                    return (
-                      <Card key={license.license_id} className="overflow-hidden">
-                        <CardHeader className="pb-2">
-                          <div className="flex justify-between items-start">
-                            <CardTitle className="text-xl font-mono">{license.license_key}</CardTitle>
-                            <Badge
-                              variant={badgeInfo.variant}
-                              className={badgeInfo.className}
-                            >
-                              {badgeInfo.label}
-                            </Badge>
-                          </div>
-                        </CardHeader>
-                        <CardContent className="pb-2">
-                          <div className="space-y-2 text-sm">
-                            <p><span className="font-medium">ID:</span> {license.license_id}</p>
-                            <p><span className="font-medium">Клиент:</span> {clientName}</p>
-                            <p><span className="font-medium">Дата выдачи:</span> {formatDate(license.issuedDate)}</p>
-                          </div>
-                        </CardContent>
-                        <Separator />
-                        <CardFooter className="flex justify-between pt-4">
-                          <Button variant="outline" size="sm" className="gap-1" onClick={() => handleViewLicense(license)}>
-                            <Eye size={14} />
-                            Просмотр
-                          </Button>
-                          <div className="flex gap-2">
-                            <Button variant="ghost" size="sm" className="gap-1 text-blue-600" onClick={() => handleEditLicense(license)}>
-                              <Pencil size={14} />
-                              Изменить
+                      return (
+                        <Card key={license.license_id} className="overflow-hidden">
+                          <CardHeader className="pb-2">
+                            <div className="flex justify-between items-start">
+                              <CardTitle className="text-xl font-mono">{license.license_key}</CardTitle>
+                              <Badge
+                                variant={badgeInfo.variant}
+                                className={badgeInfo.className}
+                              >
+                                {badgeInfo.label}
+                              </Badge>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="pb-2">
+                            <div className="space-y-2 text-sm">
+                              <p><span className="font-medium">ID:</span> {license.license_id}</p>
+                              <p><span className="font-medium">Клиент:</span> {clientName}</p>
+                              <p><span className="font-medium">Дата выдачи:</span> {formatDate(license.issuedDate)}</p>
+                            </div>
+                          </CardContent>
+                          <Separator />
+                          <CardFooter className="flex justify-between pt-4">
+                            <Button variant="outline" size="sm" className="gap-1" onClick={() => handleViewLicense(license)}>
+                              <Eye size={14} />
+                              Просмотр
                             </Button>
-                            <Button variant="ghost" size="sm" className="gap-1 text-red-600" onClick={() => handleDeleteLicense(license)}>
-                              <Trash2 size={14} />
-                              Удалить
-                            </Button>
-                          </div>
-                        </CardFooter>
-                      </Card>
-                    );
-                  })}
-                </div>
+                            <div className="flex gap-2">
+                              <Button variant="ghost" size="sm" className="gap-1 text-blue-600" onClick={() => handleEditLicense(license)}>
+                                <Pencil size={14} />
+                                Изменить
+                              </Button>
+                              <Button variant="ghost" size="sm" className="gap-1 text-red-600" onClick={() => handleDeleteLicense(license)}>
+                                <Trash2 size={14} />
+                                Удалить
+                              </Button>
+                            </div>
+                          </CardFooter>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                  <div className="mt-4 flex justify-center">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                      >
+                        Предыдущая
+                      </Button>
+                      <span className="mx-2">
+                        Страница {page} из {Math.ceil(filteredLicenses.length / 10)}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage(p => Math.min(Math.ceil(filteredLicenses.length / 10), p + 1))}
+                        disabled={page >= Math.ceil(filteredLicenses.length / 10)}
+                      >
+                        Следующая
+                      </Button>
+                    </div>
+                  </div>
+                </>
               )}
             </TabsContent>
 
@@ -269,50 +295,73 @@ export default function Licenses() {
               ) : !filteredLicenses || filteredLicenses.length === 0 ? (
                 <div className="text-center py-8">Нет доступных лицензий</div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {filteredLicenses.filter(license => license.status === "AVAIL").map((license) => {
-                    const badgeInfo = getLicenseBadge(license.status);
-                    const clientName = getClientName(license.client_id);
-                    return (
-                      // Render the same card as in "all" tab
-                      <Card key={license.license_id} className="overflow-hidden">
-                        {/* Same card content as above */}
-                        <CardHeader className="pb-2">
-                          <div className="flex justify-between items-start">
-                            <CardTitle className="text-xl font-mono">{license.license_key}</CardTitle>
-                            <Badge variant={badgeInfo.variant} className={badgeInfo.className}>
-                              {badgeInfo.label}
-                            </Badge>
-                          </div>
-                        </CardHeader>
-                        <CardContent className="pb-2">
-                          <div className="space-y-2 text-sm">
-                            <p><span className="font-medium">ID:</span> {license.license_id}</p>
-                            <p><span className="font-medium">Клиент:</span> {clientName}</p>
-                            <p><span className="font-medium">Дата выдачи:</span> {formatDate(license.issuedDate)}</p>
-                          </div>
-                        </CardContent>
-                        <Separator />
-                        <CardFooter className="flex justify-between pt-4">
-                          <Button variant="outline" size="sm" className="gap-1" onClick={() => handleViewLicense(license)}>
-                            <Eye size={14} />
-                            Просмотр
-                          </Button>
-                          <div className="flex gap-2">
-                            <Button variant="ghost" size="sm" className="gap-1 text-blue-600" onClick={() => handleEditLicense(license)}>
-                              <Pencil size={14} />
-                              Изменить
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {filteredLicenses.filter(license => license.status === "AVAIL").slice((page - 1) * 10, page * 10).map((license) => {
+                      const badgeInfo = getLicenseBadge(license.status);
+                      const clientName = getClientName(license.client_id);
+                      return (
+                        <Card key={license.license_id} className="overflow-hidden">
+                          <CardHeader className="pb-2">
+                            <div className="flex justify-between items-start">
+                              <CardTitle className="text-xl font-mono">{license.license_key}</CardTitle>
+                              <Badge variant={badgeInfo.variant} className={badgeInfo.className}>
+                                {badgeInfo.label}
+                              </Badge>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="pb-2">
+                            <div className="space-y-2 text-sm">
+                              <p><span className="font-medium">ID:</span> {license.license_id}</p>
+                              <p><span className="font-medium">Клиент:</span> {clientName}</p>
+                              <p><span className="font-medium">Дата выдачи:</span> {formatDate(license.issuedDate)}</p>
+                            </div>
+                          </CardContent>
+                          <Separator />
+                          <CardFooter className="flex justify-between pt-4">
+                            <Button variant="outline" size="sm" className="gap-1" onClick={() => handleViewLicense(license)}>
+                              <Eye size={14} />
+                              Просмотр
                             </Button>
-                            <Button variant="ghost" size="sm" className="gap-1 text-red-600" onClick={() => handleDeleteLicense(license)}>
-                              <Trash2 size={14} />
-                              Удалить
-                            </Button>
-                          </div>
-                        </CardFooter>
-                      </Card>
-                    );
-                  })}
-                </div>
+                            <div className="flex gap-2">
+                              <Button variant="ghost" size="sm" className="gap-1 text-blue-600" onClick={() => handleEditLicense(license)}>
+                                <Pencil size={14} />
+                                Изменить
+                              </Button>
+                              <Button variant="ghost" size="sm" className="gap-1 text-red-600" onClick={() => handleDeleteLicense(license)}>
+                                <Trash2 size={14} />
+                                Удалить
+                              </Button>
+                            </div>
+                          </CardFooter>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                  <div className="mt-4 flex justify-center">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                      >
+                        Предыдущая
+                      </Button>
+                      <span className="mx-2">
+                        Страница {page} из {Math.ceil(filteredLicenses.filter(license => license.status === "AVAIL").length / 10)}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage(p => Math.min(Math.ceil(filteredLicenses.filter(license => license.status === "AVAIL").length / 10), p + 1))}
+                        disabled={page >= Math.ceil(filteredLicenses.filter(license => license.status === "AVAIL").length / 10)}
+                      >
+                        Следующая
+                      </Button>
+                    </div>
+                  </div>
+                </>
               )}
             </TabsContent>
 
@@ -326,48 +375,73 @@ export default function Licenses() {
               ) : !filteredLicenses || filteredLicenses.length === 0 ? (
                 <div className="text-center py-8">Нет используемых лицензий</div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {filteredLicenses.filter(license => license.status === "USED").map((license) => {
-                    const badgeInfo = getLicenseBadge(license.status);
-                    const clientName = getClientName(license.client_id);
-                    return (
-                      <Card key={license.license_id} className="overflow-hidden">
-                        <CardHeader className="pb-2">
-                          <div className="flex justify-between items-start">
-                            <CardTitle className="text-xl font-mono">{license.license_key}</CardTitle>
-                            <Badge variant={badgeInfo.variant} className={badgeInfo.className}>
-                              {badgeInfo.label}
-                            </Badge>
-                          </div>
-                        </CardHeader>
-                        <CardContent className="pb-2">
-                          <div className="space-y-2 text-sm">
-                            <p><span className="font-medium">ID:</span> {license.license_id}</p>
-                            <p><span className="font-medium">Клиент:</span> {clientName}</p>
-                            <p><span className="font-medium">Дата выдачи:</span> {formatDate(license.issuedDate)}</p>
-                          </div>
-                        </CardContent>
-                        <Separator />
-                        <CardFooter className="flex justify-between pt-4">
-                          <Button variant="outline" size="sm" className="gap-1" onClick={() => handleViewLicense(license)}>
-                            <Eye size={14} />
-                            Просмотр
-                          </Button>
-                          <div className="flex gap-2">
-                            <Button variant="ghost" size="sm" className="gap-1 text-blue-600" onClick={() => handleEditLicense(license)}>
-                              <Pencil size={14} />
-                              Изменить
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {filteredLicenses.filter(license => license.status === "USED").slice((page - 1) * 10, page * 10).map((license) => {
+                      const badgeInfo = getLicenseBadge(license.status);
+                      const clientName = getClientName(license.client_id);
+                      return (
+                        <Card key={license.license_id} className="overflow-hidden">
+                          <CardHeader className="pb-2">
+                            <div className="flex justify-between items-start">
+                              <CardTitle className="text-xl font-mono">{license.license_key}</CardTitle>
+                              <Badge variant={badgeInfo.variant} className={badgeInfo.className}>
+                                {badgeInfo.label}
+                              </Badge>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="pb-2">
+                            <div className="space-y-2 text-sm">
+                              <p><span className="font-medium">ID:</span> {license.license_id}</p>
+                              <p><span className="font-medium">Клиент:</span> {clientName}</p>
+                              <p><span className="font-medium">Дата выдачи:</span> {formatDate(license.issuedDate)}</p>
+                            </div>
+                          </CardContent>
+                          <Separator />
+                          <CardFooter className="flex justify-between pt-4">
+                            <Button variant="outline" size="sm" className="gap-1" onClick={() => handleViewLicense(license)}>
+                              <Eye size={14} />
+                              Просмотр
                             </Button>
-                            <Button variant="ghost" size="sm" className="gap-1 text-red-600" onClick={() => handleDeleteLicense(license)}>
-                              <Trash2 size={14} />
-                              Удалить
-                            </Button>
-                          </div>
-                        </CardFooter>
-                      </Card>
-                    );
-                  })}
-                </div>
+                            <div className="flex gap-2">
+                              <Button variant="ghost" size="sm" className="gap-1 text-blue-600" onClick={() => handleEditLicense(license)}>
+                                <Pencil size={14} />
+                                Изменить
+                              </Button>
+                              <Button variant="ghost" size="sm" className="gap-1 text-red-600" onClick={() => handleDeleteLicense(license)}>
+                                <Trash2 size={14} />
+                                Удалить
+                              </Button>
+                            </div>
+                          </CardFooter>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                  <div className="mt-4 flex justify-center">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                      >
+                        Предыдущая
+                      </Button>
+                      <span className="mx-2">
+                        Страница {page} из {Math.ceil(filteredLicenses.filter(license => license.status === "USED").length / 10)}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage(p => Math.min(Math.ceil(filteredLicenses.filter(license => license.status === "USED").length / 10), p + 1))}
+                        disabled={page >= Math.ceil(filteredLicenses.filter(license => license.status === "USED").length / 10)}
+                      >
+                        Следующая
+                      </Button>
+                    </div>
+                  </div>
+                </>
               )}
             </TabsContent>
 
@@ -381,48 +455,73 @@ export default function Licenses() {
               ) : !filteredLicenses || filteredLicenses.length === 0 ? (
                 <div className="text-center py-8">Нет заблокированных лицензий</div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {filteredLicenses.filter(license => license.status === "BLOCKED").map((license) => {
-                    const badgeInfo = getLicenseBadge(license.status);
-                    const clientName = getClientName(license.client_id);
-                    return (
-                      <Card key={license.license_id} className="overflow-hidden">
-                        <CardHeader className="pb-2">
-                          <div className="flex justify-between items-start">
-                            <CardTitle className="text-xl font-mono">{license.license_key}</CardTitle>
-                            <Badge variant={badgeInfo.variant} className={badgeInfo.className}>
-                              {badgeInfo.label}
-                            </Badge>
-                          </div>
-                        </CardHeader>
-                        <CardContent className="pb-2">
-                          <div className="space-y-2 text-sm">
-                            <p><span className="font-medium">ID:</span> {license.license_id}</p>
-                            <p><span className="font-medium">Клиент:</span> {clientName}</p>
-                            <p><span className="font-medium">Дата выдачи:</span> {formatDate(license.issuedDate)}</p>
-                          </div>
-                        </CardContent>
-                        <Separator />
-                        <CardFooter className="flex justify-between pt-4">
-                          <Button variant="outline" size="sm" className="gap-1" onClick={() => handleViewLicense(license)}>
-                            <Eye size={14} />
-                            Просмотр
-                          </Button>
-                          <div className="flex gap-2">
-                            <Button variant="ghost" size="sm" className="gap-1 text-blue-600" onClick={() => handleEditLicense(license)}>
-                              <Pencil size={14} />
-                              Изменить
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {filteredLicenses.filter(license => license.status === "BLOCKED").slice((page - 1) * 10, page * 10).map((license) => {
+                      const badgeInfo = getLicenseBadge(license.status);
+                      const clientName = getClientName(license.client_id);
+                      return (
+                        <Card key={license.license_id} className="overflow-hidden">
+                          <CardHeader className="pb-2">
+                            <div className="flex justify-between items-start">
+                              <CardTitle className="text-xl font-mono">{license.license_key}</CardTitle>
+                              <Badge variant={badgeInfo.variant} className={badgeInfo.className}>
+                                {badgeInfo.label}
+                              </Badge>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="pb-2">
+                            <div className="space-y-2 text-sm">
+                              <p><span className="font-medium">ID:</span> {license.license_id}</p>
+                              <p><span className="font-medium">Клиент:</span> {clientName}</p>
+                              <p><span className="font-medium">Дата выдачи:</span> {formatDate(license.issuedDate)}</p>
+                            </div>
+                          </CardContent>
+                          <Separator />
+                          <CardFooter className="flex justify-between pt-4">
+                            <Button variant="outline" size="sm" className="gap-1" onClick={() => handleViewLicense(license)}>
+                              <Eye size={14} />
+                              Просмотр
                             </Button>
-                            <Button variant="ghost" size="sm" className="gap-1 text-red-600" onClick={() => handleDeleteLicense(license)}>
-                              <Trash2 size={14} />
-                              Удалить
-                            </Button>
-                          </div>
-                        </CardFooter>
-                      </Card>
-                    );
-                  })}
-                </div>
+                            <div className="flex gap-2">
+                              <Button variant="ghost" size="sm" className="gap-1 text-blue-600" onClick={() => handleEditLicense(license)}>
+                                <Pencil size={14} />
+                                Изменить
+                              </Button>
+                              <Button variant="ghost" size="sm" className="gap-1 text-red-600" onClick={() => handleDeleteLicense(license)}>
+                                <Trash2 size={14} />
+                                Удалить
+                              </Button>
+                            </div>
+                          </CardFooter>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                  <div className="mt-4 flex justify-center">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                      >
+                        Предыдущая
+                      </Button>
+                      <span className="mx-2">
+                        Страница {page} из {Math.ceil(filteredLicenses.filter(license => license.status === "BLOCKED").length / 10)}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage(p => Math.min(Math.ceil(filteredLicenses.filter(license => license.status === "BLOCKED").length / 10), p + 1))}
+                        disabled={page >= Math.ceil(filteredLicenses.filter(license => license.status === "BLOCKED").length / 10)}
+                      >
+                        Следующая
+                      </Button>
+                    </div>
+                  </div>
+                </>
               )}
             </TabsContent>
           </Tabs>
