@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -140,31 +141,34 @@ export default function Partners() {
                   </Card>
                 ))}
               </div>
-              <div className="mt-4 flex justify-center">
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPage(p => Math.max(1, p - 1))}
-                    disabled={page === 1}
-                  >
-                    Предыдущая
-                  </Button>
-                  <span className="mx-2">
-                    Страница {page} из {Math.ceil(filteredPartners?.length / 10) || 1}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPage(p => Math.min(Math.ceil(filteredPartners?.length / 10), p + 1))}
-                    disabled={page >= Math.ceil(filteredPartners?.length / 10)}
-                  >
-                    Следующая
-                  </Button>
-                </div>
-              </div>
             )}
           </div>
+
+          {filteredPartners && filteredPartners.length > 0 && (
+            <div className="mt-4 flex justify-center">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                >
+                  Предыдущая
+                </Button>
+                <span className="mx-2">
+                  Страница {page} из {Math.ceil(filteredPartners?.length / 10) || 1}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(p => Math.min(Math.ceil(filteredPartners?.length / 10), p + 1))}
+                  disabled={page >= Math.ceil(filteredPartners?.length / 10)}
+                >
+                  Следующая
+                </Button>
+              </div>
+            </div>
+          )}
 
           {/* View Partner Dialog */}
           <Dialog open={showViewModal} onOpenChange={setShowViewModal}>
