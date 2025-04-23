@@ -40,7 +40,7 @@ export default function Updates() {
   });
 
   const filteredUpdates = updates?.filter(update => {
-    if (selectedStatus === "all") return true;
+    if (!selectedStatus) return true;
     return update.status === selectedStatus.toUpperCase();
   });
 
@@ -221,7 +221,7 @@ export default function Updates() {
           </div>
 
           <Tabs defaultValue="all" onValueChange={(value) => {
-            setSelectedStatus(value === "all" ? "" : value.toUpperCase());
+            setSelectedStatus(value);
             setPage(1); // Reset page when changing tabs
           }}>
             <TabsList className="mb-4">
