@@ -26,6 +26,7 @@ export default function Updates() {
   });
   const [openViewUpdate, setOpenViewUpdate] = useState(false); // Added state for view dialog
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
+  const [page, setPage] = useState(1); // Added state for pagination
 
 
   // Функция для получения обновлений по статусу
@@ -142,7 +143,7 @@ export default function Updates() {
 
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {updates.map((update) => (
+        {updates.slice((page - 1) * 10, page * 10).map((update) => (
           <Card key={update.update_id} className="overflow-hidden">
             <CardHeader className="pb-2">
               <div className="flex justify-between items-start">
@@ -235,6 +236,29 @@ export default function Updates() {
               ) : (
                 renderUpdateCards(filteredUpdates)
               )}
+              <div className="mt-4 flex justify-center">
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                  >
+                    Предыдущая
+                  </Button>
+                  <span className="mx-2">
+                    Страница {page} из {Math.ceil(filteredUpdates?.length / 10) || 0}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(p => Math.min(Math.ceil(filteredUpdates?.length / 10) || 0, p + 1))}
+                    disabled={page >= Math.ceil(filteredUpdates?.length / 10) || 0}
+                  >
+                    Следующая
+                  </Button>
+                </div>
+              </div>
             </TabsContent>
 
             <TabsContent value="active" className="space-y-4">
@@ -245,6 +269,29 @@ export default function Updates() {
               ) : (
                 renderUpdateCards(updates?.filter(u => u.status === "ACTIVE"))
               )}
+              <div className="mt-4 flex justify-center">
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                  >
+                    Предыдущая
+                  </Button>
+                  <span className="mx-2">
+                    Страница {page} из {Math.ceil((updates?.filter(u => u.status === "ACTIVE")?.length || 0) / 10)}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(p => Math.min(Math.ceil((updates?.filter(u => u.status === "ACTIVE")?.length || 0) / 10), p + 1))}
+                    disabled={page >= Math.ceil((updates?.filter(u => u.status === "ACTIVE")?.length || 0) / 10)}
+                  >
+                    Следующая
+                  </Button>
+                </div>
+              </div>
             </TabsContent>
 
             <TabsContent value="draft" className="space-y-4">
@@ -255,6 +302,29 @@ export default function Updates() {
               ) : (
                 renderUpdateCards(updates?.filter(u => u.status === "DRAFT"))
               )}
+              <div className="mt-4 flex justify-center">
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                  >
+                    Предыдущая
+                  </Button>
+                  <span className="mx-2">
+                    Страница {page} из {Math.ceil((updates?.filter(u => u.status === "DRAFT")?.length || 0) / 10)}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(p => Math.min(Math.ceil((updates?.filter(u => u.status === "DRAFT")?.length || 0) / 10), p + 1))}
+                    disabled={page >= Math.ceil((updates?.filter(u => u.status === "DRAFT")?.length || 0) / 10)}
+                  >
+                    Следующая
+                  </Button>
+                </div>
+              </div>
             </TabsContent>
 
             <TabsContent value="obsolete" className="space-y-4">
@@ -265,6 +335,29 @@ export default function Updates() {
               ) : (
                 renderUpdateCards(updates?.filter(u => u.status === "OBSOLETE"))
               )}
+              <div className="mt-4 flex justify-center">
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                  >
+                    Предыдущая
+                  </Button>
+                  <span className="mx-2">
+                    Страница {page} из {Math.ceil((updates?.filter(u => u.status === "OBSOLETE")?.length || 0) / 10)}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(p => Math.min(Math.ceil((updates?.filter(u => u.status === "OBSOLETE")?.length || 0) / 10), p + 1))}
+                    disabled={page >= Math.ceil((updates?.filter(u => u.status === "OBSOLETE")?.length || 0) / 10)}
+                  >
+                    Следующая
+                  </Button>
+                </div>
+              </div>
             </TabsContent>
           </Tabs>
 

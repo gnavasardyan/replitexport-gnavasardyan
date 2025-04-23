@@ -21,6 +21,7 @@ export default function Partners() {
   const [selectedPartner, setSelectedPartner] = useState<PartnerResponse | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showViewModal, setShowViewModal] = useState(false);
+  const [page, setPage] = useState(1);
 
   const { data: partners, isLoading, error } = useQuery({
     queryKey: ["/api/v1/partners"],
@@ -99,7 +100,7 @@ export default function Partners() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredPartners.map((partner: PartnerResponse) => (
+                {filteredPartners.slice((page - 1) * 10, page * 10).map((partner: PartnerResponse) => (
                   <Card key={partner.partner_id} className="overflow-hidden">
                     <CardHeader className="pb-2">
                       <div className="flex justify-between items-start">
@@ -138,6 +139,29 @@ export default function Partners() {
                     </CardFooter>
                   </Card>
                 ))}
+              </div>
+              <div className="mt-4 flex justify-center">
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                  >
+                    Предыдущая
+                  </Button>
+                  <span className="mx-2">
+                    Страница {page} из {Math.ceil(filteredPartners?.length / 10) || 1}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(p => Math.min(Math.ceil(filteredPartners?.length / 10), p + 1))}
+                    disabled={page >= Math.ceil(filteredPartners?.length / 10)}
+                  >
+                    Следующая
+                  </Button>
+                </div>
               </div>
             )}
           </div>
