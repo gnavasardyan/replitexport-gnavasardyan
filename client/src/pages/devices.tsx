@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { DeviceResponse, ClientResponse } from "@shared/schema";
 import { Input } from "@/components/ui/input";
 import { Sidebar } from "@/components/layout/sidebar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import React from "react";
 import {
   Select,
