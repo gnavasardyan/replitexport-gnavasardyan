@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -13,6 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { DeviceResponse, ClientResponse } from "@shared/schema";
 import { Input } from "@/components/ui/input";
 import { Sidebar } from "@/components/layout/sidebar";
+import React from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function Devices() {
   const { toast } = useToast();
