@@ -230,9 +230,25 @@ export default function Clients() {
               ))}
             </div>
             <div className="flex justify-center mt-4">
-              <Button onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))} disabled={currentPage === 1}>Prev</Button>
-              <span className="mx-2">{currentPage}</span>
-              <Button onClick={() => setCurrentPage(prev => prev + 1)} disabled={!filteredClients || paginatedClients.length < itemsPerPage}>Next</Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))} 
+                disabled={currentPage === 1}
+              >
+                Предыдущая
+              </Button>
+              <span className="mx-4 flex items-center">
+                Страница {currentPage} из {Math.ceil((filteredClients?.length || 0) / itemsPerPage)}
+              </span>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setCurrentPage(prev => prev + 1)} 
+                disabled={!filteredClients || currentPage >= Math.ceil(filteredClients.length / itemsPerPage)}
+              >
+                Следующая
+              </Button>
             </div>
           </>
         )}
