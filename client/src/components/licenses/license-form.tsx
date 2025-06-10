@@ -41,7 +41,7 @@ export function LicenseForm({ license, onClose, onSuccess }: LicenseFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [clients, setClients] = useState<ClientResponse[]>([]);
   const [originalLicense, setOriginalLicense] = useState<LicenseResponse | null>(null);
-  
+
   useEffect(() => {
     const fetchClients = async () => {
       try {
@@ -56,9 +56,9 @@ export function LicenseForm({ license, onClose, onSuccess }: LicenseFormProps) {
         });
       }
     };
-    
+
     fetchClients();
-    
+
     // Сохраняем исходные данные лицензии
     if (license) {
       setOriginalLicense({...license});
@@ -115,30 +115,12 @@ export function LicenseForm({ license, onClose, onSuccess }: LicenseFormProps) {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: InsertLicense }) => {
-      // Формируем полный объект для PUT-запроса, включая неизмененные поля
-      const putData = {
-        // Сохраняем ID и другие неизменяемые поля из оригинала
-        ...originalLicense,
-        // Обновляем только изменяемые поля
+    mutationFn: (data: InsertLicense) => {
+      if (!license) throw new Error("No license to update");
+      return API.licenses.update(license.license_id, {
         client_id: Number(data.client_id),
         license_key: data.license_key,
-        status: data.status,
-        // Обновляем дату изменения
-        updatedAt: new Date().toISOString()
-      };
-      
-      return fetch(`/api/v1/licenses/${id}`, {
-        method: 'PUT',
-        headers: {
-          'accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(putData),
-      })
-      .then(response => {
-        if (!response.ok) throw new Error('Ошибка обновления лицензии');
-        return response.json();
+        status: data.status
       });
     },
     onSuccess: handleSuccess,
@@ -156,7 +138,7 @@ export function LicenseForm({ license, onClose, onSuccess }: LicenseFormProps) {
     setIsSubmitting(true);
     
     if (license) {
-      updateMutation.mutate({ id: license.id, data });
+      updateMutation.mutate(data);
     } else {
       createMutation.mutate(data);
     }
@@ -165,13 +147,6 @@ export function LicenseForm({ license, onClose, onSuccess }: LicenseFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        {/* Показываем ID лицензии при редактировании */}
-        {license && (
-          <div className="text-sm text-gray-500">
-            ID лицензии: {license.id}
-          </div>
-        )}
-
         <FormField
           control={form.control}
           name="client_id"
@@ -250,15 +225,6 @@ export function LicenseForm({ license, onClose, onSuccess }: LicenseFormProps) {
             </FormItem>
           )}
         />
-
-        {/* Показываем исходные данные при редактировании */}
-        {license && originalLicense && (
-          <div className="text-sm text-gray-500 space-y-1">
-            <div>Исходный клиент: {clients.find(c => c.client_id === originalLicense.client_id)?.client_name || originalLicense.client_id}</div>
-            <div>Исходный ключ: {originalLicense.license_key}</div>
-            <div>Исходный статус: {originalLicense.status}</div>
-          </div>
-        )}
 
         <div className="flex justify-end gap-2 mt-6">
           <Button

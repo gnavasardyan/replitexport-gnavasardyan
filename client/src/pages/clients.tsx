@@ -28,6 +28,10 @@ export default function Clients() {
   const [openDeleteClient, setOpenDeleteClient] = useState(false);
   const [selectedClient, setSelectedClient] = useState<ClientResponse | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 10;
+
 
   // Fetch clients
   const { data: clients, isLoading, error } = useQuery({
@@ -67,12 +71,15 @@ export default function Clients() {
   };
 
   const handleViewClient = (client: ClientResponse) => {
-    toast({
-      title: "Информация о клиенте", 
-      description: `${client.client_name} (ИНН: ${client.inn})`,
-    });
+    setSelectedClient(client);
+    setShowViewModal(true);
   };
-  
+
+  const handleCloseViewModal = () => {
+    setShowViewModal(false);
+    setSelectedClient(null);
+  };
+
   // Удаление клиента
   const deleteMutation = useMutation({
     mutationFn: (id: number) => API.clients.delete(id),
@@ -106,10 +113,16 @@ export default function Clients() {
     return date.toLocaleDateString("ru-RU");
   };
 
-  // Фильтрация клиентов по поисковому запросу
+  // Фильтрация клиентов по поисковому запросу (имя или ИНН)
   const filteredClients = clients?.filter(client => 
-    client.client_name.toLowerCase().includes(searchQuery.toLowerCase())
+    client.client_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    client.inn.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const startIndex = (page - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedClients = filteredClients?.slice(startIndex, endIndex);
+
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
@@ -129,7 +142,7 @@ export default function Clients() {
         <div className="relative">
           <input
             type="text"
-            placeholder="Поиск клиентов по названию..."
+            placeholder="Поиск клиентов по названию или ИНН..."
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -148,13 +161,14 @@ export default function Clients() {
           <div className="text-center py-8">Загрузка клиентов...</div>
         ) : error ? (
           <div className="text-center py-8 text-red-500">Ошибка загрузки данных</div>
-        ) : !filteredClients || filteredClients.length === 0 ? (
+        ) : !paginatedClients || paginatedClients.length === 0 ? (
           <div className="text-center py-8">
             {searchQuery ? "Нет результатов по вашему запросу" : "Нет данных о клиентах"}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredClients.map((client: ClientResponse) => (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {paginatedClients.map((client: ClientResponse) => (
               <Card key={client.client_id} className="overflow-hidden">
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-start">
@@ -200,7 +214,33 @@ export default function Clients() {
                 </CardFooter>
               </Card>
             ))}
-          </div>
+            </div>
+            {filteredClients && filteredClients.length > 0 && (
+              <div className="mt-4 flex justify-center">
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                  >
+                    Предыдущая
+                  </Button>
+                  <span className="mx-2">
+                    Страница {page} из {Math.ceil(filteredClients?.length / itemsPerPage) || 1}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(p => Math.min(Math.ceil(filteredClients?.length / itemsPerPage), p + 1))}
+                    disabled={page >= Math.ceil(filteredClients?.length / itemsPerPage)}
+                  >
+                    Следующая
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -250,6 +290,47 @@ export default function Clients() {
               }}
             />
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* View Client Dialog */}
+      <Dialog open={showViewModal} onOpenChange={setShowViewModal}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Просмотр клиента</DialogTitle>
+          </DialogHeader>
+          {selectedClient && (
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-medium mb-2">Основная информация</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-500">Наименование</p>
+                    <p className="text-sm">{selectedClient.client_name}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">ИНН</p>
+                    <p className="text-sm">{selectedClient.inn}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Тип</p>
+                    <p className="text-sm">{selectedClient.type}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">ID партнера</p>
+                    <p className="text-sm">{selectedClient.partner_id}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Дата создания</p>
+                    <p className="text-sm">{formatDate(selectedClient.createdAt)}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button onClick={handleCloseViewModal} variant="outline">Закрыть</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

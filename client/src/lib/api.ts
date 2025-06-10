@@ -110,7 +110,7 @@ export const API = {
       return res.json();
     },
     
-    update: async (id: number, license: Partial<LicenseResponse>): Promise<LicenseResponse> => {
+    update: async (id: number, license: { client_id?: number, license_key?: string, status?: string }): Promise<LicenseResponse> => {
       const res = await apiRequest("PUT", `/api/v1/licenses/${id}`, license);
       return res.json();
     },

@@ -29,6 +29,7 @@ export function PartnerList() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
   const [selectedPartner, setSelectedPartner] = useState<Partner | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
@@ -39,12 +40,11 @@ export function PartnerList() {
   });
 
   const filteredPartners = partners ? partners.filter((partner: any) => {
-    const matchesSearch = !searchQuery ||
-      partner.partner_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      partner.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      partner.inn.toLowerCase().includes(searchQuery.toLowerCase());
-        
-    return matchesSearch;
+    const searchLower = searchQuery.toLowerCase();
+    return !searchQuery || 
+      partner.partner_name.toLowerCase().includes(searchLower) ||
+      partner.email.toLowerCase().includes(searchLower) ||
+      partner.inn.toLowerCase().includes(searchLower);
   }) : [];
 
   const handleViewPartner = (partner: Partner) => {
@@ -87,7 +87,7 @@ export function PartnerList() {
               <div className="relative">
                 <Input
                   type="text"                  
-                  placeholder="Поиск партнеров..."
+                  placeholder="Поиск партнеров по названию или ИНН..."
                   className="w-full md:w-64 pl-10"                
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -135,7 +135,7 @@ export function PartnerList() {
       {/* Actions */}
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-end gap-4">
         <div className="flex items-center gap-2">        
-         
+
           <div className="flex border rounded-md overflow-hidden">
             <Button variant="ghost" size="sm" className="rounded-none border-r"
             >
@@ -147,6 +147,53 @@ export function PartnerList() {
           </div>
         </div>
       </div>
+
+      {/* Модальное окно просмотра */}
+      <Dialog open={showViewModal} onOpenChange={setShowViewModal}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Просмотр партнера</DialogTitle>
+          </DialogHeader>
+          {selectedPartner && (
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-medium mb-2">Основная информация</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-500">Наименование</p>
+                    <p className="text-sm">{selectedPartner.partner_name}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">ИНН</p>
+                    <p className="text-sm">{selectedPartner.inn}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">КПП</p>
+                    <p className="text-sm">{selectedPartner.kpp}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">ОГРН</p>
+                    <p className="text-sm">{selectedPartner.ogrn}</p>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <h4 className="font-medium mb-2">Контактная информация</h4>
+                <div className="space-y-2">
+                  <div>
+                    <p className="text-sm text-gray-500">Email</p>
+                    <p className="text-sm">{selectedPartner.email}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Адрес</p>
+                    <p className="text-sm">{selectedPartner.address}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Сетка партнеров */}
       {isLoading ? (
@@ -200,7 +247,7 @@ export function PartnerList() {
         </div>
 
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"> {/*This line is updated*/}
           {filteredPartners.map((partner: Partner) => (
             <PartnerCard
               key={partner.id}

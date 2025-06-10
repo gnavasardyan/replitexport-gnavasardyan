@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Pencil, Trash2, Eye } from "lucide-react";
+import { Trash2, Eye } from "lucide-react";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { API } from "@/lib/api";
@@ -10,17 +10,27 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DeviceResponse, ClientResponse } from "@shared/schema";
-
+import { Input } from "@/components/ui/input";
 import { Sidebar } from "@/components/layout/sidebar";
+import React from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function Devices() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [openEditDevice, setOpenEditDevice] = useState(false);
   const [openDeleteDevice, setOpenDeleteDevice] = useState(false);
   const [selectedDevice, setSelectedDevice] = useState<DeviceResponse | null>(null);
+  const [openViewDevice, setOpenViewDevice] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [page, setPage] = useState(1);
 
-  // Fetch devices and clients
   const { data: devices, isLoading: isLoadingDevices, error: devicesError } = useQuery({
     queryKey: ["/api/v1/devices"],
     queryFn: API.devices.getAll,
@@ -37,28 +47,19 @@ export default function Devices() {
     return client ? client.client_name : clientId.toString();
   };
 
-  const handleEditDevice = (device: DeviceResponse) => {
-    setSelectedDevice(device);
-    setOpenEditDevice(true);
-  };
-
   const handleDeleteDevice = (device: DeviceResponse) => {
     setSelectedDevice(device);
     setOpenDeleteDevice(true);
   };
 
   const handleViewDevice = (device: DeviceResponse) => {
-    const clientName = getClientName(device.client_id);
-    toast({
-      title: "Информация об устройстве",
-      description: `ID: ${device.device_id}, Клиент: ${clientName}, Статус: ${device.status || "Не указан"}`,
-    });
+    setSelectedDevice(device);
+    setOpenViewDevice(true);
   };
 
-  // Get status badge styling based on device status
   const getDeviceBadge = (status: string | undefined) => {
     if (!status) return { variant: "outline" as const, className: "", label: "Нет статуса" };
-    
+
     switch (status.toLowerCase()) {
       case "ready":
         return { variant: "default" as const, className: "bg-green-500", label: "Готово" };
@@ -73,6 +74,12 @@ export default function Devices() {
     }
   };
 
+  const filteredDevices = devices?.filter(device => {
+    const matchesClient = !searchQuery || device.client_id.toString() === searchQuery;
+    const matchesStatus = !statusFilter || device.status?.toLowerCase() === statusFilter.toLowerCase();
+    return matchesClient && matchesStatus;
+  });
+
   const isLoading = isLoadingDevices || isLoadingClients;
   const error = devicesError || clientsError;
 
@@ -85,26 +92,49 @@ export default function Devices() {
             <h1 className="text-3xl font-bold">Устройства</h1>
           </div>
 
-          <Tabs defaultValue="all">
-            <TabsList className="mb-4">
-              <TabsTrigger value="all">Все устройства</TabsTrigger>
-              <TabsTrigger value="ready">Готовые</TabsTrigger>
-              <TabsTrigger value="not_configured">Не настроенные</TabsTrigger>
-            </TabsList>
+          <div className="mb-6 space-y-4">
+            <div className="flex gap-4">
+              <Select onValueChange={(value) => setSearchQuery(value)}>
+                <SelectTrigger className="w-[280px]">
+                  <SelectValue placeholder="Выберите клиента..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {clients?.map((client: ClientResponse) => (
+                    <SelectItem key={client.client_id} value={client.client_id.toString()}>
+                      {client.client_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-            <TabsContent value="all" className="space-y-4">
+              <Select onValueChange={(value) => setStatusFilter(value)}>
+                <SelectTrigger className="w-[280px]">
+                  <SelectValue placeholder="Фильтр по статусу..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ready">Готово</SelectItem>
+                  <SelectItem value="not_configured">Не настроено</SelectItem>
+                  <SelectItem value="initialization">Инициализация</SelectItem>
+                  <SelectItem value="sync_error">Ошибка синхронизации</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="space-y-4">
               {isLoading ? (
                 <div className="text-center py-8">Загрузка данных...</div>
               ) : error ? (
                 <div className="text-center py-8 text-red-500">Ошибка загрузки данных</div>
-              ) : !devices || devices.length === 0 ? (
+              ) : !filteredDevices || filteredDevices.length === 0 ? (
                 <div className="text-center py-8">Нет данных об устройствах</div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {devices.map((device: DeviceResponse) => {
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {filteredDevices.slice((page - 1) * 10, page * 10).map((device: DeviceResponse) => {
                     const badgeInfo = getDeviceBadge(device.status);
                     const clientName = getClientName(device.client_id);
-                    
+
                     return (
                       <Card key={device.device_id} className="overflow-hidden">
                         <CardHeader className="pb-2">
@@ -136,46 +166,43 @@ export default function Devices() {
                             <Eye size={14} />
                             Просмотр
                           </Button>
-                          <div className="flex gap-2">
-                            <Button variant="ghost" size="sm" className="gap-1 text-blue-600" onClick={() => handleEditDevice(device)}>
-                              <Pencil size={14} />
-                              Изменить
-                            </Button>
-                            <Button variant="ghost" size="sm" className="gap-1 text-red-600" onClick={() => handleDeleteDevice(device)}>
-                              <Trash2 size={14} />
-                              Удалить
-                            </Button>
-                          </div>
+                          <Button variant="ghost" size="sm" className="gap-1 text-red-600" onClick={() => handleDeleteDevice(device)}>
+                            <Trash2 size={14} />
+                            Удалить
+                          </Button>
                         </CardFooter>
                       </Card>
                     );
                   })}
                 </div>
+                  <div className="mt-4 flex justify-center">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                      >
+                        Предыдущая
+                      </Button>
+                      <span className="mx-2">
+                        Страница {page} из {Math.ceil(filteredDevices.length / 10)}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPage(p => Math.min(Math.ceil(filteredDevices.length / 10), p + 1))}
+                        disabled={page >= Math.ceil(filteredDevices.length / 10)}
+                      >
+                        Следующая
+                      </Button>
+                    </div>
+                  </div>
+                </>
               )}
-            </TabsContent>
+            </div>
 
-            <TabsContent value="ready">
-              <div className="text-center py-8">Функциональность находится в разработке</div>
-            </TabsContent>
-
-            <TabsContent value="not_configured">
-              <div className="text-center py-8">Функциональность находится в разработке</div>
-            </TabsContent>
-          </Tabs>
-
-          {/* Edit Device Dialog - Placeholder for now */}
-          <Dialog open={openEditDevice} onOpenChange={setOpenEditDevice}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Изменить данные устройства</DialogTitle>
-              </DialogHeader>
-              <div className="py-4">
-                <p>Форма для редактирования устройства - находится в разработке</p>
-              </div>
-            </DialogContent>
-          </Dialog>
-
-          {/* Delete Device Dialog - Placeholder for now */}
+          {/* Delete Device Dialog */}
           <Dialog open={openDeleteDevice} onOpenChange={setOpenDeleteDevice}>
             <DialogContent>
               <DialogHeader>
@@ -195,6 +222,57 @@ export default function Devices() {
                   Удалить
                 </Button>
               </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* View Device Dialog */}
+          <Dialog open={openViewDevice} onOpenChange={setOpenViewDevice}>
+            <DialogContent className="sm:max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Просмотр устройства</DialogTitle>
+              </DialogHeader>
+              {selectedDevice && (
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-medium mb-2">Основная информация</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-gray-500">ID устройства</p>
+                        <p className="text-sm">{selectedDevice.device_id}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Клиент</p>
+                        <p className="text-sm">{getClientName(selectedDevice.client_id)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">ID лицензии</p>
+                        <p className="text-sm">{selectedDevice.license_id}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">ID установки</p>
+                        <p className="text-sm">{selectedDevice.inst_id}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-medium mb-2">Техническая информация</h4>
+                    <div className="space-y-2">
+                      <div>
+                        <p className="text-sm text-gray-500">Версия ОС</p>
+                        <p className="text-sm">{selectedDevice.os_version}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">MAC-адрес</p>
+                        <p className="text-sm">{selectedDevice.local_id}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Статус</p>
+                        <p className="text-sm">{selectedDevice.status}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </DialogContent>
           </Dialog>
         </div>
