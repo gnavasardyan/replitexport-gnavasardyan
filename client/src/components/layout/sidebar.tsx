@@ -71,7 +71,7 @@ export function Sidebar() {
                 fill="white"
               />
             </svg>
-            <span className="ml-2 text-lg font-semibold">Центр Партнеров</span>
+            <span className="ml-2 text-lg font-semibold">Центр интеграции</span>
           </div>
           <button className="md:hidden text-gray-500 focus:outline-none" id="toggleSidebar">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
