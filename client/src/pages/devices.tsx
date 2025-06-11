@@ -155,9 +155,10 @@ export default function Devices() {
                             <p><span className="font-medium">ID устройства:</span> {device.device_id}</p>
                             <p><span className="font-medium">Клиент:</span> {clientName}</p>
                             <p><span className="font-medium">ID лицензии:</span> {device.license_id}</p>
-                            <p><span className="font-medium">ID установки:</span> {device.inst_id}</p>
-                            <p><span className="font-medium">Версия ОС:</span> {device.os_version}</p>
+                            <p><span className="font-medium">Instance ID:</span> {device.inst_id}</p>
                             <p><span className="font-medium">MAC-адрес:</span> {device.local_id}</p>
+                            <p><span className="font-medium">Дата создания:</span> {device.created_timestamp}</p>
+                            <p><span className="font-medium">Дата обновления:</span> {device.updated_timestamp}</p>
                           </div>
                         </CardContent>
                         <Separator />
@@ -249,7 +250,7 @@ export default function Devices() {
                         <p className="text-sm">{selectedDevice.license_id}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-500">ID установки</p>
+                        <p className="text-sm text-gray-500">Instance ID</p>
                         <p className="text-sm">{selectedDevice.inst_id}</p>
                       </div>
                     </div>
@@ -258,16 +259,20 @@ export default function Devices() {
                     <h4 className="font-medium mb-2">Техническая информация</h4>
                     <div className="space-y-2">
                       <div>
-                        <p className="text-sm text-gray-500">Версия ОС</p>
-                        <p className="text-sm">{selectedDevice.os_version}</p>
-                      </div>
-                      <div>
                         <p className="text-sm text-gray-500">MAC-адрес</p>
                         <p className="text-sm">{selectedDevice.local_id}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-500">Статус</p>
                         <p className="text-sm">{selectedDevice.status}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Дата создания</p>
+                        <p className="text-sm">{selectedDevice.created_timestamp}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Дата обновления</p>
+                        <p className="text-sm">{selectedDevice.updated_timestamp}</p>
                       </div>
                     </div>
                   </div>
