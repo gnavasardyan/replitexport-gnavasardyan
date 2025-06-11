@@ -155,10 +155,7 @@ export default function Devices() {
                             <p><span className="font-medium">ID устройства:</span> {device.device_id}</p>
                             <p><span className="font-medium">Клиент:</span> {clientName}</p>
                             <p><span className="font-medium">ID лицензии:</span> {device.license_id}</p>
-                            <p><span className="font-medium">Instance ID:</span> {device.inst_id}</p>
-                            <p><span className="font-medium">MAC-адрес:</span> {device.local_id}</p>
                             <p><span className="font-medium">Дата создания:</span> {device.created_timestamp}</p>
-                            <p><span className="font-medium">Дата обновления:</span> {device.updated_timestamp}</p>
                           </div>
                         </CardContent>
                         <Separator />
