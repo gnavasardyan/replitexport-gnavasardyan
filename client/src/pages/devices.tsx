@@ -156,6 +156,7 @@ export default function Devices() {
                             <p><span className="font-medium">Клиент:</span> {clientName}</p>
                             <p><span className="font-medium">ID лицензии:</span> {device.license_id}</p>
                             <p><span className="font-medium">Дата создания:</span> {device.created_timestamp}</p>
+                            <p><span className="font-medium">Версия:</span> {device.lm_version}</p>
                           </div>
                         </CardContent>
                         <Separator />
@@ -258,6 +259,10 @@ export default function Devices() {
                       <div>
                         <p className="text-sm text-gray-500">MAC-адрес</p>
                         <p className="text-sm">{selectedDevice.local_id}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500">Версия</p>
+                        <p className="text-sm">{selectedDevice.lm_version}</p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-500">Статус</p>
