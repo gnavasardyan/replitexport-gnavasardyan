@@ -88,12 +88,12 @@ export function Sidebar() {
               Партнеры
             </div>
             <ul className="mt-1 space-y-1">
-              <SidebarItem
+              {/* <SidebarItem
                 icon={<Users className="w-5 h-5 mr-3" />}
                 label="Партнеры"
                 href="/partners"
                 active={isActive("/partners")}
-              />
+              /> */}
               <SidebarItem
                 icon={<Building2 className="w-5 h-5 mr-3" />}
                 label="Клиенты"
