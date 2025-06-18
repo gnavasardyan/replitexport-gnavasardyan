@@ -4,7 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { ApiStatusIndicator } from "@/components/ui/api-status-indicator";
 import NotFound from "@/pages/not-found";
-import Partners from "@/pages/partners";
+// import Partners from "@/pages/partners";
 import Home from "@/pages/home";
 import Clients from "@/pages/clients";
 import Licenses from "@/pages/licenses";
@@ -16,7 +16,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
-      <Route path="/partners" component={Partners} />
+      {/* <Route path="/partners" component={Partners} /> */}
       <Route path="/clients" component={Clients} />
       <Route path="/licenses" component={Licenses} />
       <Route path="/devices" component={Devices} />
