@@ -84,7 +84,8 @@ export function Sidebar() {
         <nav className="py-4 flex-grow">
           <ul className="space-y-4">
             {/* Partners Group */}
-            {/* <li><div className="px-4 mb-1 text-xs font-semibold text-gray-500 uppercase">
+            <li>
+              {/* <div className="px-4 mb-1 text-xs font-semibold text-gray-500 uppercase">
               Партнеры
             </div> */}
             <ul className="mt-1 space-y-1">
