@@ -73,7 +73,26 @@ export default function Devices() {
         return { variant: "outline" as const, className: "", label: status };
     }
   };
+  const handleConfirmDelete = async () => {
+  if (!selectedDevice) return;
 
+  try {
+    await API.devices.delete(selectedDevice.device_id);
+    toast({
+      title: "Успех",
+      description: "Устройство успешно удалено",
+      variant: "default",
+    });
+    queryClient.invalidateQueries({ queryKey: ["/api/v1/devices"] });
+    setOpenDeleteDevice(false);
+  } catch (error) {
+    toast({
+      title: "Ошибка",
+      description: "Не удалось удалить устройство",
+      variant: "destructive",
+    });
+  }
+};
   const filteredDevices = devices?.filter(device => {
     const matchesClient = !searchQuery || device.client_id.toString() === searchQuery;
     const matchesStatus = !statusFilter || device.status?.toLowerCase() === statusFilter.toLowerCase();
@@ -217,7 +236,7 @@ export default function Devices() {
                 <Button variant="outline" onClick={() => setOpenDeleteDevice(false)}>
                   Отмена
                 </Button>
-                <Button variant="destructive">
+                <Button variant="destructive" onClick={handleConfirmDelete}>
                   Удалить
                 </Button>
               </div>
