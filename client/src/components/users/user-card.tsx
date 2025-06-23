@@ -55,7 +55,7 @@ export function UserCard({ user, onEdit, onDelete, onView }: UserCardProps) {
       <CardContent className="py-2 flex-grow">
         <div className="space-y-2">
           <div className="text-sm">
-            <span className="font-semibold">Имя:</span> {user.name || '-'}
+            <span className="font-semibold">Имя:</span> {user.email || '-'}
           </div>
           {user.createdAt && (
             <div className="text-sm">
