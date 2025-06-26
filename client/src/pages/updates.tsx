@@ -148,7 +148,7 @@ export default function Updates() {
             <CardHeader className="pb-2">
               <div className="flex justify-between items-start">
                 <div>
-                  <CardTitle className="text-xl">v{update.lm_version}</CardTitle>
+                  <CardTitle className="text-xl">{update.lm_version}</CardTitle>
                   <p className="text-sm text-muted-foreground">ID: {update.update_id}</p>
                 </div>
                 <Badge variant={
