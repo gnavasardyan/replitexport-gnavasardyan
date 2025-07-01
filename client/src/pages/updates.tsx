@@ -377,33 +377,19 @@ export default function Updates() {
                   <label htmlFor="status" className="text-right">
                     Статус
                   </label>
-                  <div className="col-span-3 space-y-2">
-                    <Select 
-                      value={editForm.status}
-                      onValueChange={(value) => setEditForm({...editForm, status: value})}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Выберите статус" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="DRAFT">DRAFT</SelectItem>
-                        <SelectItem value="ACTIVE">ACTIVE</SelectItem>
-                        <SelectItem value="OBSOLETE">OBSOLETE</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Button 
-                      variant="destructive" 
-                      size="sm" 
-                      className="w-full"
-                      type="button"
-                      onClick={() => {
-                        // Здесь можно добавить логику для "Для всех"
-                        console.log("Для всех clicked");
-                      }}
-                    >
-                      Для всех
-                    </Button>
-                  </div>
+                  <Select 
+                    value={editForm.status}
+                    onValueChange={(value) => setEditForm({...editForm, status: value})}
+                  >
+                    <SelectTrigger className="col-span-3">
+                      <SelectValue placeholder="Выберите статус" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="DRAFT">DRAFT</SelectItem>
+                      <SelectItem value="ACTIVE">ACTIVE</SelectItem>
+                      <SelectItem value="OBSOLETE">OBSOLETE</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <label htmlFor="notes" className="text-right">
@@ -416,6 +402,19 @@ export default function Updates() {
                     className="col-span-3"
                     placeholder="Введите примечания к релизу"
                   />
+                </div>
+                <div className="flex justify-center mt-4">
+                  <Button 
+                    variant="destructive" 
+                    size="sm"
+                    type="button"
+                    onClick={() => {
+                      // Здесь можно добавить логику для "Применить обновление для всех устройств"
+                      console.log("Применить обновление для всех устройств clicked");
+                    }}
+                  >
+                    Применить обновление для всех устройств
+                  </Button>
                 </div>
               </div>
 
