@@ -408,9 +408,32 @@ export default function Updates() {
                     variant="destructive" 
                     size="sm"
                     type="button"
-                    onClick={() => {
-                      // Здесь можно добавить логику для "Применить обновление для всех устройств"
-                      console.log("Применить обновление для всех устройств clicked");
+                    onClick={async () => {
+                      if (!selectedUpdate) return;
+                      
+                      try {
+                        const response = await fetch(`/api/v1/updates/apply_target_update/${selectedUpdate.lm_version}`, {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                          },
+                        });
+                        
+                        if (response.ok) {
+                          toast({
+                            title: "Успех",
+                            description: `Обновление v${selectedUpdate.lm_version} успешно применено для всех устройств`,
+                          });
+                        } else {
+                          throw new Error('Failed to apply update');
+                        }
+                      } catch (error) {
+                        toast({
+                          title: "Ошибка",
+                          description: "Не удалось применить обновление для всех устройств",
+                          variant: "destructive",
+                        });
+                      }
                     }}
                   >
                     Применить обновление для всех устройств
