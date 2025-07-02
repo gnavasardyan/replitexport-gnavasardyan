@@ -112,8 +112,8 @@ export default function Devices() {
     }
 
     try {
-      console.log(`Updating device ${deviceId} to version ${latestUpdate.lm_version}`);
-      await API.devices.update(deviceId, { lm_version: latestUpdate.lm_version });
+      console.log(`Updating device ${deviceId} to target version ${latestUpdate.lm_version}`);
+      await API.devices.update(deviceId, { target_version: latestUpdate.lm_version });
       
       toast({
         title: "Успех",
@@ -146,8 +146,8 @@ export default function Devices() {
     try {
       // Apply update to all selected devices using direct device API
       const updatePromises = Array.from(selectedDevices).map(async (deviceId) => {
-        console.log(`Updating device ${deviceId} to version ${latestUpdate.lm_version}`);
-        return API.devices.update(deviceId, { lm_version: latestUpdate.lm_version });
+        console.log(`Updating device ${deviceId} to target version ${latestUpdate.lm_version}`);
+        return API.devices.update(deviceId, { target_version: latestUpdate.lm_version });
       });
 
       const results = await Promise.all(updatePromises);
