@@ -100,19 +100,7 @@ export default function Devices() {
     try {
       // Apply update to all selected devices
       const updatePromises = Array.from(selectedDevices).map(async (deviceId) => {
-        const response = await fetch(`/api/v1/updates/apply_target_update/${latestUpdate.lm_version}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ device_id: deviceId }),
-        });
-        
-        if (!response.ok) {
-          throw new Error(`Failed to update device ${deviceId}`);
-        }
-        
-        return response.json();
+        return API.updates.applyUpdate(latestUpdate.lm_version, deviceId);
       });
 
       await Promise.all(updatePromises);
