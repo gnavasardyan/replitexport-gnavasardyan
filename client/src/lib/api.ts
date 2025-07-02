@@ -166,6 +166,12 @@ export const API = {
     
     delete: async (id: number): Promise<void> => {
       await apiRequest("DELETE", `/api/v1/updates/${id}`, undefined);
+    },
+    
+    applyUpdate: async (version: string, deviceId?: number): Promise<any> => {
+      const body = deviceId ? { device_id: deviceId } : undefined;
+      const res = await apiRequest("POST", `/api/v1/updates/apply_target_update/${version}`, body);
+      return res.json();
     }
   }
 };

@@ -2,17 +2,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trash2, Eye } from "lucide-react";
+import { Trash2, Eye, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { API } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { DeviceResponse, ClientResponse } from "@shared/schema";
+import { DeviceResponse, ClientResponse, UpdateResponse } from "@shared/schema";
 import { Input } from "@/components/ui/input";
 import { Sidebar } from "@/components/layout/sidebar";
 import React from "react";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -29,6 +30,8 @@ export default function Devices() {
   const [openViewDevice, setOpenViewDevice] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [showOutdatedOnly, setShowOutdatedOnly] = useState(false);
+  const [selectedDevices, setSelectedDevices] = useState<Set<number>>(new Set());
   const [page, setPage] = useState(1);
 
   const { data: devices, isLoading: isLoadingDevices, error: devicesError } = useQuery({
@@ -41,10 +44,95 @@ export default function Devices() {
     queryFn: API.clients.getAll,
   });
 
+  const { data: updates, isLoading: isLoadingUpdates } = useQuery({
+    queryKey: ["/api/v1/updates"],
+    queryFn: API.updates.getAll,
+  });
+
   const getClientName = (clientId: number) => {
     if (!clients) return clientId.toString();
     const client = clients.find((c: ClientResponse) => c.client_id === clientId);
     return client ? client.client_name : clientId.toString();
+  };
+
+  const getLatestActiveUpdate = (): UpdateResponse | null => {
+    if (!updates) return null;
+    const activeUpdates = updates.filter((update: UpdateResponse) => update.status === 'ACTIVE');
+    if (activeUpdates.length === 0) return null;
+    
+    // Sort by version (assuming semantic versioning or lexicographic comparison)
+    return activeUpdates.sort((a, b) => b.lm_version.localeCompare(a.lm_version))[0];
+  };
+
+  const isDeviceOutdated = (device: DeviceResponse): boolean => {
+    const latestUpdate = getLatestActiveUpdate();
+    if (!latestUpdate) return false;
+    
+    // Compare versions - device is outdated if its version is less than latest
+    return device.lm_version < latestUpdate.lm_version;
+  };
+
+  const handleDeviceSelection = (deviceId: number, checked: boolean) => {
+    const newSelected = new Set(selectedDevices);
+    if (checked) {
+      newSelected.add(deviceId);
+    } else {
+      newSelected.delete(deviceId);
+    }
+    setSelectedDevices(newSelected);
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const outdatedDeviceIds = filteredDevices
+        ?.filter(device => isDeviceOutdated(device))
+        .map(device => device.device_id) || [];
+      setSelectedDevices(new Set(outdatedDeviceIds));
+    } else {
+      setSelectedDevices(new Set());
+    }
+  };
+
+  const handleBulkUpdate = async () => {
+    const latestUpdate = getLatestActiveUpdate();
+    if (!latestUpdate || selectedDevices.size === 0) return;
+
+    try {
+      // Apply update to all selected devices
+      const updatePromises = Array.from(selectedDevices).map(async (deviceId) => {
+        const response = await fetch(`/api/v1/updates/apply_target_update/${latestUpdate.lm_version}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ device_id: deviceId }),
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to update device ${deviceId}`);
+        }
+        
+        return response.json();
+      });
+
+      await Promise.all(updatePromises);
+      
+      toast({
+        title: "Успех",
+        description: `Обновление применено к ${selectedDevices.size} устройствам`,
+        variant: "default",
+      });
+      
+      // Refresh devices data and clear selection
+      queryClient.invalidateQueries({ queryKey: ["/api/v1/devices"] });
+      setSelectedDevices(new Set());
+    } catch (error) {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось применить обновления ко всем устройствам",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDeleteDevice = (device: DeviceResponse) => {
@@ -96,10 +184,11 @@ export default function Devices() {
   const filteredDevices = devices?.filter(device => {
     const matchesClient = !searchQuery || device.client_id.toString() === searchQuery;
     const matchesStatus = !statusFilter || device.status?.toLowerCase() === statusFilter.toLowerCase();
-    return matchesClient && matchesStatus;
+    const matchesOutdated = !showOutdatedOnly || isDeviceOutdated(device);
+    return matchesClient && matchesStatus && matchesOutdated;
   });
 
-  const isLoading = isLoadingDevices || isLoadingClients;
+  const isLoading = isLoadingDevices || isLoadingClients || isLoadingUpdates;
   const error = devicesError || clientsError;
 
   return (
@@ -112,7 +201,7 @@ export default function Devices() {
           </div>
 
           <div className="mb-6 space-y-4">
-            <div className="flex gap-4">
+            <div className="flex gap-4 flex-wrap">
               <Select onValueChange={(value) => setSearchQuery(value)}>
                 <SelectTrigger className="w-[280px]">
                   <SelectValue placeholder="Выберите клиента..." />
@@ -137,7 +226,45 @@ export default function Devices() {
                   <SelectItem value="sync_error">Ошибка синхронизации</SelectItem>
                 </SelectContent>
               </Select>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="outdated-filter"
+                  checked={showOutdatedOnly}
+                  onCheckedChange={(checked) => setShowOutdatedOnly(checked as boolean)}
+                />
+                <label
+                  htmlFor="outdated-filter"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Только требующие обновления
+                </label>
+              </div>
             </div>
+
+            {showOutdatedOnly && filteredDevices && filteredDevices.some(device => isDeviceOutdated(device)) && (
+              <div className="flex gap-4 items-center">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="select-all"
+                    checked={filteredDevices.filter(device => isDeviceOutdated(device)).every(device => selectedDevices.has(device.device_id))}
+                    onCheckedChange={handleSelectAll}
+                  />
+                  <label htmlFor="select-all" className="text-sm">
+                    Выбрать все устройства
+                  </label>
+                </div>
+                
+                <Button
+                  onClick={handleBulkUpdate}
+                  disabled={selectedDevices.size === 0}
+                  className="gap-2"
+                >
+                  <RefreshCw size={16} />
+                  Обновить выбранные ({selectedDevices.size})
+                </Button>
+              </div>
+            )}
           </div>
 
           <div className="space-y-4">
@@ -153,20 +280,36 @@ export default function Devices() {
                     {filteredDevices.slice((page - 1) * 10, page * 10).map((device: DeviceResponse) => {
                     const badgeInfo = getDeviceBadge(device.status);
                     const clientName = getClientName(device.client_id);
+                    const isOutdated = isDeviceOutdated(device);
 
                     return (
                       <Card key={device.device_id} className="overflow-hidden">
                         <CardHeader className="pb-2">
                           <div className="flex justify-between items-start">
-                            <CardTitle className="text-xl">
-                              Устройство {device.device_id}
-                            </CardTitle>
-                            <Badge 
-                              variant={badgeInfo.variant}
-                              className={badgeInfo.className}
-                            >
-                              {badgeInfo.label}
-                            </Badge>
+                            <div className="flex items-center gap-2">
+                              {isOutdated && showOutdatedOnly && (
+                                <Checkbox
+                                  checked={selectedDevices.has(device.device_id)}
+                                  onCheckedChange={(checked) => handleDeviceSelection(device.device_id, checked as boolean)}
+                                />
+                              )}
+                              <CardTitle className="text-xl">
+                                Устройство {device.device_id}
+                              </CardTitle>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <Badge 
+                                variant={badgeInfo.variant}
+                                className={badgeInfo.className}
+                              >
+                                {badgeInfo.label}
+                              </Badge>
+                              {isOutdated && (
+                                <Badge variant="destructive" className="text-xs">
+                                  Требует обновления
+                                </Badge>
+                              )}
+                            </div>
                           </div>
                         </CardHeader>
                         <CardContent className="pb-2">

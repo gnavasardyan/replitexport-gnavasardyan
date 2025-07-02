@@ -695,6 +695,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // POST /api/v1/updates/apply_target_update/:version - Apply update to device(s)
+  app.post(`${API_PREFIX}/updates/apply_target_update/:version`, async (req: Request, res: Response) => {
+    const version = req.params.version;
+    const { device_id } = req.body;
+    
+    try {
+      // Find the update with the specified version
+      const updates = await storage.getAllUpdates();
+      const targetUpdate = updates.find(update => update.lm_version === version && update.status === 'ACTIVE');
+      
+      if (!targetUpdate) {
+        return res.status(404).json({ message: "Update not found or not active" });
+      }
+      
+      if (device_id) {
+        // Apply update to specific device
+        const device = await storage.getDeviceById(device_id);
+        if (!device) {
+          return res.status(404).json({ message: "Device not found" });
+        }
+        
+        // Update device version
+        const updatedDevice = await storage.updateDevice(device_id, { 
+          lm_version: targetUpdate.lm_version 
+        });
+        
+        return res.status(200).json({ 
+          message: "Update applied successfully", 
+          device: updatedDevice 
+        });
+      } else {
+        // Apply update to all devices (if no device_id specified)
+        const devices = await storage.getAllDevices();
+        const updatePromises = devices
+          .filter(device => device.lm_version < targetUpdate.lm_version)
+          .map(device => storage.updateDevice(device.device_id, { 
+            lm_version: targetUpdate.lm_version 
+          }));
+        
+        const updatedDevices = await Promise.all(updatePromises);
+        
+        return res.status(200).json({ 
+          message: "Update applied successfully", 
+          updated_devices_count: updatedDevices.length 
+        });
+      }
+    } catch (error) {
+      console.error(`Error applying update ${version}:`, error);
+      return res.status(500).json({ message: "Failed to apply update" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
