@@ -403,42 +403,44 @@ export default function Updates() {
                     placeholder="Введите примечания к релизу"
                   />
                 </div>
-                <div className="flex justify-center mt-4">
-                  <Button 
-                    variant="destructive" 
-                    size="sm"
-                    type="button"
-                    onClick={async () => {
-                      if (!selectedUpdate) return;
-                      
-                      try {
-                        const response = await fetch(`/api/v1/updates/apply_target_update/${selectedUpdate.lm_version}`, {
-                          method: 'POST',
-                          headers: {
-                            'Content-Type': 'application/json',
-                          },
-                        });
+                {selectedUpdate?.status === 'ACTIVE' && (
+                  <div className="flex justify-center mt-4">
+                    <Button 
+                      variant="destructive" 
+                      size="sm"
+                      type="button"
+                      onClick={async () => {
+                        if (!selectedUpdate) return;
                         
-                        if (response.ok) {
-                          toast({
-                            title: "Успех",
-                            description: `Обновление v${selectedUpdate.lm_version} успешно применено для всех устройств`,
+                        try {
+                          const response = await fetch(`/api/v1/updates/apply_target_update/${selectedUpdate.lm_version}`, {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                            },
                           });
-                        } else {
-                          throw new Error('Failed to apply update');
+                          
+                          if (response.ok) {
+                            toast({
+                              title: "Успех",
+                              description: `Обновление v${selectedUpdate.lm_version} успешно применено для всех устройств`,
+                            });
+                          } else {
+                            throw new Error('Failed to apply update');
+                          }
+                        } catch (error) {
+                          toast({
+                            title: "Ошибка",
+                            description: "Не удалось применить обновление для всех устройств",
+                            variant: "destructive",
+                          });
                         }
-                      } catch (error) {
-                        toast({
-                          title: "Ошибка",
-                          description: "Не удалось применить обновление для всех устройств",
-                          variant: "destructive",
-                        });
-                      }
-                    }}
-                  >
-                    Применить обновление для всех устройств
-                  </Button>
-                </div>
+                      }}
+                    >
+                      Применить обновление для всех устройств
+                    </Button>
+                  </div>
+                )}
               </div>
 
               <DialogFooter>
