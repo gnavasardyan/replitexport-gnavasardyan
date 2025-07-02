@@ -68,9 +68,14 @@ export default function Devices() {
     const latestUpdate = getLatestActiveUpdate();
     if (!latestUpdate) return false;
 
-    // Compare versions - device is outdated if its version is different from latest
-    const isOutdated = device.lm_version !== latestUpdate.lm_version;
-    console.log(`Device ${device.device_id}: current version ${device.lm_version}, latest ${latestUpdate.lm_version}, outdated: ${isOutdated}`);
+    // Device is outdated if:
+    // 1. It has no version (null/undefined) 
+    // 2. Its version is different from the latest active version
+    const deviceVersion = device.lm_version;
+    const latestVersion = latestUpdate.lm_version;
+    
+    const isOutdated = !deviceVersion || deviceVersion !== latestVersion;
+    console.log(`Device ${device.device_id}: current version ${deviceVersion}, latest ${latestVersion}, outdated: ${isOutdated}`);
     return isOutdated;
   };
 
