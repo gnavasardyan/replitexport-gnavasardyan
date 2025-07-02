@@ -68,17 +68,22 @@ export default function Devices() {
     const latestUpdate = getLatestActiveUpdate();
     if (!latestUpdate) return false;
     
-    // Compare versions - device is outdated if its version is less than latest
-    return device.lm_version < latestUpdate.lm_version;
+    // Compare versions - device is outdated if its version is different from latest
+    const isOutdated = device.lm_version !== latestUpdate.lm_version;
+    console.log(`Device ${device.device_id}: current version ${device.lm_version}, latest ${latestUpdate.lm_version}, outdated: ${isOutdated}`);
+    return isOutdated;
   };
 
   const handleDeviceSelection = (deviceId: number, checked: boolean) => {
     const newSelected = new Set(selectedDevices);
     if (checked) {
       newSelected.add(deviceId);
+      console.log(`Device ${deviceId} selected`);
     } else {
       newSelected.delete(deviceId);
+      console.log(`Device ${deviceId} deselected`);
     }
+    console.log('Selected devices:', Array.from(newSelected));
     setSelectedDevices(newSelected);
   };
 
@@ -87,23 +92,34 @@ export default function Devices() {
       const outdatedDeviceIds = filteredDevices
         ?.filter(device => isDeviceOutdated(device))
         .map(device => device.device_id) || [];
+      console.log('Selecting all outdated devices:', outdatedDeviceIds);
       setSelectedDevices(new Set(outdatedDeviceIds));
     } else {
+      console.log('Clearing all selections');
       setSelectedDevices(new Set());
     }
   };
 
   const handleBulkUpdate = async () => {
     const latestUpdate = getLatestActiveUpdate();
-    if (!latestUpdate || selectedDevices.size === 0) return;
+    if (!latestUpdate || selectedDevices.size === 0) {
+      toast({
+        title: "Ошибка",
+        description: "Нет доступных обновлений или не выбраны устройства",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       // Apply update to all selected devices
       const updatePromises = Array.from(selectedDevices).map(async (deviceId) => {
+        console.log(`Applying update ${latestUpdate.lm_version} to device ${deviceId}`);
         return API.updates.applyUpdate(latestUpdate.lm_version, deviceId);
       });
 
-      await Promise.all(updatePromises);
+      const results = await Promise.all(updatePromises);
+      console.log('Update results:', results);
       
       toast({
         title: "Успех",
@@ -115,6 +131,7 @@ export default function Devices() {
       queryClient.invalidateQueries({ queryKey: ["/api/v1/devices"] });
       setSelectedDevices(new Set());
     } catch (error) {
+      console.error('Bulk update error:', error);
       toast({
         title: "Ошибка",
         description: "Не удалось применить обновления ко всем устройствам",
