@@ -112,12 +112,12 @@ export default function Devices() {
     }
 
     try {
-      console.log(`Updating device ${deviceId} to target version ${latestUpdate.lm_version}`);
+      console.log(`Setting target version for device ${deviceId} to ${latestUpdate.lm_version}`);
       await API.devices.update(deviceId, { target_version: latestUpdate.lm_version });
 
       toast({
         title: "Успех",
-        description: `Устройство ${deviceId} успешно обновлено`,
+        description: `Целевая версия для устройства ${deviceId} установлена`,
         variant: "default",
       });
 
@@ -126,7 +126,7 @@ export default function Devices() {
       console.error(`Device update error for ${deviceId}:`, error);
       toast({
         title: "Ошибка",
-        description: `Не удалось обновить устройство ${deviceId}`,
+        description: `Не удалось установить целевую версию для устройства ${deviceId}`,
         variant: "destructive",
       });
     }
@@ -144,9 +144,9 @@ export default function Devices() {
     }
 
     try {
-      // Apply update to all selected devices using direct device API
+      // Set target version for all selected devices using direct device API
       const updatePromises = Array.from(selectedDevices).map(async (deviceId) => {
-        console.log(`Updating device ${deviceId} to target version ${latestUpdate.lm_version}`);
+        console.log(`Setting target version for device ${deviceId} to ${latestUpdate.lm_version}`);
         return API.devices.update(deviceId, { target_version: latestUpdate.lm_version });
       });
 
@@ -155,7 +155,7 @@ export default function Devices() {
 
       toast({
         title: "Успех",
-        description: `Обновление применено к ${selectedDevices.size} устройствам`,
+        description: `Целевая версия установлена для ${selectedDevices.size} устройств`,
         variant: "default",
       });
 
@@ -166,7 +166,7 @@ export default function Devices() {
       console.error('Bulk update error:', error);
       toast({
         title: "Ошибка",
-        description: "Не удалось применить обновления ко всем устройствам",
+        description: "Не удалось установить целевую версию для всех устройств",
         variant: "destructive",
       });
     }
