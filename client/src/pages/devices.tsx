@@ -59,7 +59,7 @@ export default function Devices() {
     if (!updates) return null;
     const activeUpdates = updates.filter((update: UpdateResponse) => update.status === 'ACTIVE');
     if (activeUpdates.length === 0) return null;
-    
+
     // Sort by version (assuming semantic versioning or lexicographic comparison)
     return activeUpdates.sort((a, b) => b.lm_version.localeCompare(a.lm_version))[0];
   };
@@ -67,7 +67,7 @@ export default function Devices() {
   const isDeviceOutdated = (device: DeviceResponse): boolean => {
     const latestUpdate = getLatestActiveUpdate();
     if (!latestUpdate) return false;
-    
+
     // Compare versions - device is outdated if its version is different from latest
     const isOutdated = device.lm_version !== latestUpdate.lm_version;
     console.log(`Device ${device.device_id}: current version ${device.lm_version}, latest ${latestUpdate.lm_version}, outdated: ${isOutdated}`);
@@ -114,13 +114,13 @@ export default function Devices() {
     try {
       console.log(`Updating device ${deviceId} to target version ${latestUpdate.lm_version}`);
       await API.devices.update(deviceId, { target_version: latestUpdate.lm_version });
-      
+
       toast({
         title: "Успех",
         description: `Устройство ${deviceId} успешно обновлено`,
         variant: "default",
       });
-      
+
       queryClient.invalidateQueries({ queryKey: ["/api/v1/devices"] });
     } catch (error) {
       console.error(`Device update error for ${deviceId}:`, error);
@@ -152,13 +152,13 @@ export default function Devices() {
 
       const results = await Promise.all(updatePromises);
       console.log('Bulk update results:', results);
-      
+
       toast({
         title: "Успех",
         description: `Обновление применено к ${selectedDevices.size} устройствам`,
         variant: "default",
       });
-      
+
       // Refresh devices data and clear selection
       queryClient.invalidateQueries({ queryKey: ["/api/v1/devices"] });
       setSelectedDevices(new Set());
@@ -291,7 +291,7 @@ export default function Devices() {
                     Выбрать все устаревшие устройства
                   </label>
                 </div>
-                
+
                 <Button
                   onClick={handleBulkUpdate}
                   disabled={selectedDevices.size === 0}
@@ -359,23 +359,13 @@ export default function Devices() {
                           </div>
                         </CardContent>
                         <Separator />
-                        <CardFooter className="flex justify-between pt-4">
+                        <CardFooter className="flex justify-end pt-4">
                           <div className="flex gap-2">
                             <Button variant="outline" size="sm" className="gap-1" onClick={() => handleViewDevice(device)}>
                               <Eye size={14} />
                               Просмотр
                             </Button>
-                            {isOutdated && (
-                              <Button 
-                                variant="default" 
-                                size="sm" 
-                                className="gap-1 bg-blue-500 hover:bg-blue-600" 
-                                onClick={() => handleDeviceUpdate(device.device_id)}
-                              >
-                                <RefreshCw size={14} />
-                                Обновить
-                              </Button>
-                            )}
+                            
                           </div>
                           <Button variant="ghost" size="sm" className="gap-1 text-red-600" onClick={() => handleDeleteDevice(device)}>
                             <Trash2 size={14} />
