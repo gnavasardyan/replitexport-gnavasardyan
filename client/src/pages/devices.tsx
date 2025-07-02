@@ -100,6 +100,38 @@ export default function Devices() {
     }
   };
 
+  const handleDeviceUpdate = async (deviceId: number) => {
+    const latestUpdate = getLatestActiveUpdate();
+    if (!latestUpdate) {
+      toast({
+        title: "Ошибка",
+        description: "Нет доступных обновлений",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      console.log(`Updating device ${deviceId} to version ${latestUpdate.lm_version}`);
+      await API.devices.update(deviceId, { lm_version: latestUpdate.lm_version });
+      
+      toast({
+        title: "Успех",
+        description: `Устройство ${deviceId} успешно обновлено`,
+        variant: "default",
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ["/api/v1/devices"] });
+    } catch (error) {
+      console.error(`Device update error for ${deviceId}:`, error);
+      toast({
+        title: "Ошибка",
+        description: `Не удалось обновить устройство ${deviceId}`,
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleBulkUpdate = async () => {
     const latestUpdate = getLatestActiveUpdate();
     if (!latestUpdate || selectedDevices.size === 0) {
@@ -112,14 +144,14 @@ export default function Devices() {
     }
 
     try {
-      // Apply update to all selected devices
+      // Apply update to all selected devices using direct device API
       const updatePromises = Array.from(selectedDevices).map(async (deviceId) => {
-        console.log(`Applying update ${latestUpdate.lm_version} to device ${deviceId}`);
-        return API.updates.applyUpdate(latestUpdate.lm_version, deviceId);
+        console.log(`Updating device ${deviceId} to version ${latestUpdate.lm_version}`);
+        return API.devices.update(deviceId, { lm_version: latestUpdate.lm_version });
       });
 
       const results = await Promise.all(updatePromises);
-      console.log('Update results:', results);
+      console.log('Bulk update results:', results);
       
       toast({
         title: "Успех",
@@ -247,7 +279,7 @@ export default function Devices() {
               </div>
             </div>
 
-            {showOutdatedOnly && filteredDevices && filteredDevices.some(device => isDeviceOutdated(device)) && (
+            {filteredDevices && filteredDevices.some(device => isDeviceOutdated(device)) && (
               <div className="flex gap-4 items-center">
                 <div className="flex items-center space-x-2">
                   <Checkbox
@@ -256,7 +288,7 @@ export default function Devices() {
                     onCheckedChange={handleSelectAll}
                   />
                   <label htmlFor="select-all" className="text-sm">
-                    Выбрать все устройства
+                    Выбрать все устаревшие устройства
                   </label>
                 </div>
                 
@@ -292,7 +324,7 @@ export default function Devices() {
                         <CardHeader className="pb-2">
                           <div className="flex justify-between items-start">
                             <div className="flex items-center gap-2">
-                              {isOutdated && showOutdatedOnly && (
+                              {isOutdated && (
                                 <Checkbox
                                   checked={selectedDevices.has(device.device_id)}
                                   onCheckedChange={(checked) => handleDeviceSelection(device.device_id, checked as boolean)}
@@ -328,10 +360,23 @@ export default function Devices() {
                         </CardContent>
                         <Separator />
                         <CardFooter className="flex justify-between pt-4">
-                          <Button variant="outline" size="sm" className="gap-1" onClick={() => handleViewDevice(device)}>
-                            <Eye size={14} />
-                            Просмотр
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button variant="outline" size="sm" className="gap-1" onClick={() => handleViewDevice(device)}>
+                              <Eye size={14} />
+                              Просмотр
+                            </Button>
+                            {isOutdated && (
+                              <Button 
+                                variant="default" 
+                                size="sm" 
+                                className="gap-1 bg-blue-500 hover:bg-blue-600" 
+                                onClick={() => handleDeviceUpdate(device.device_id)}
+                              >
+                                <RefreshCw size={14} />
+                                Обновить
+                              </Button>
+                            )}
+                          </div>
                           <Button variant="ghost" size="sm" className="gap-1 text-red-600" onClick={() => handleDeleteDevice(device)}>
                             <Trash2 size={14} />
                             Удалить
